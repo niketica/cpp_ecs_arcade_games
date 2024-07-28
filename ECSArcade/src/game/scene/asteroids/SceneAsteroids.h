@@ -9,7 +9,7 @@
 
 #define M_PI 3.14159265358979323846
 
-struct Player
+struct Transform
 {
     Vec2 position;
     Vec2 velocity;
@@ -19,14 +19,15 @@ struct Player
 
 enum Tag
 {
-    UNDEFINED_,
+    UNDEFINED_ENTITY,
     PLAYER,
-    BACKGROUND
+    BACKGROUND,
+    ASTEROID
 };
 
 struct EntityTag
 {
-    Tag tag = UNDEFINED_;
+    Tag value = UNDEFINED_ENTITY;
 };
 
 enum Action
@@ -51,9 +52,15 @@ private:
     const float playerSpeedIncrement = 1.f;
     const float maxPlayerSpeed = 5.f;
 
+    int asteroidCount = 0;
+
     void createPlayer();
     void createBackground();
     void createActionList();
-    void processActionList(Player& cPlayer);
-    void updatePlayerPosition(Player& player, float deltaTime);
+    void processActionList(Transform& transform);
+    void updatePosition(Transform& transform, float deltaTime);
+    void createAsteroid();
+    void updatePlayer();
+    void updateAsteroid();
+    Entity getEntityWithTag(Tag tag);
 };

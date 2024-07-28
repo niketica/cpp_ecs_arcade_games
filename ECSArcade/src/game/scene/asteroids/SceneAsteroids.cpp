@@ -14,30 +14,52 @@ void SceneAsteroids::init()
     createActionList();
     createPlayer();
     createBackground();
+    createAsteroid();
 }
 
 void SceneAsteroids::createPlayer()
 {
-    Entity ePlayer = game->getECSManager().addEntity();
+    Entity entity = game->getECSManager().addEntity();
     EntityTag entityTag;
-    entityTag.tag = PLAYER;
-    game->getECSManager().addComponent<EntityTag>(ePlayer, entityTag);
+    entityTag.value = PLAYER;
+    game->getECSManager().addComponent<EntityTag>(entity, entityTag);
 
-    Player cPlayer;
-    cPlayer.position = { 100, 200 };
-    cPlayer.velocity = { 0, 0 };
-    game->getECSManager().addComponent<Player>(ePlayer, cPlayer);
+    Transform transform;
+    transform.position = { 100, 200 };
+    transform.velocity = { 0, 0 };
+    game->getECSManager().addComponent<Transform>(entity, transform);
 
-    sf::Sprite playerSprite;
-    playerSprite = game->getAssetManager().getSprite("space_ship");
-    game->getECSManager().addComponent<sf::Sprite>(ePlayer, playerSprite);
+    sf::Sprite sprite;
+    sprite = game->getAssetManager().getSprite("space_ship");
+    game->getECSManager().addComponent<sf::Sprite>(entity, sprite);
+}
+
+void SceneAsteroids::createAsteroid()
+{
+    Entity entity = game->getECSManager().addEntity();
+    EntityTag entityTag;
+    entityTag.value = ASTEROID;
+    game->getECSManager().addComponent<EntityTag>(entity, entityTag);
+
+    Transform transform;
+    transform.position = { 250, 320 };
+    transform.velocity = { 0, 0 };
+    transform.speed = 2.f;
+    transform.degrees = 90.f;
+    game->getECSManager().addComponent<Transform>(entity, transform);
+
+    sf::Sprite sprite;
+    sprite = game->getAssetManager().getSprite("asteroid");
+    game->getECSManager().addComponent<sf::Sprite>(entity, sprite);
+
+    asteroidCount++;
 }
 
 void SceneAsteroids::createBackground()
 {
     Entity eBackground = game->getECSManager().addEntity();
     EntityTag backgroundTag;
-    backgroundTag.tag = BACKGROUND;
+    backgroundTag.value = BACKGROUND;
     game->getECSManager().addComponent<EntityTag>(eBackground, backgroundTag);
 
     sf::Sprite backgroundSprite;
@@ -115,42 +137,55 @@ void SceneAsteroids::input()
 
 void SceneAsteroids::update()
 {
+    updatePlayer();
+
+    if (asteroidCount > 0)
+    {
+        updateAsteroid();
+    }
+}
+
+Entity SceneAsteroids::getEntityWithTag(Tag tag)
+{
     auto entities = game->getECSManager().getEntitiesWithComponent<EntityTag>();
 
-    Entity ePlayer = NULL;
+    Entity returnEntity = NULL;
     for (auto entity : entities)
     {
         auto entityTag = game->getECSManager().getComponent<EntityTag>(entity);
 
-        if (entityTag->tag == PLAYER)
+        if (entityTag->value == tag)
         {
-            ePlayer = entity;
+            returnEntity = entity;
         }
     }
 
-    if (ePlayer == NULL)
+    if (returnEntity == NULL)
     {
-        std::cerr << "ERROR!!! Player entity not found" << std::endl;
+        std::cerr << "ERROR!!! Entity not found with tag " << tag << std::endl;
         game->getECSManager().printComponents();
         exit(-1);
     }
 
-    auto cPlayer = game->getECSManager().getComponent<Player>(ePlayer);
-    auto cPlayerSprite = game->getECSManager().getComponent<sf::Sprite>(ePlayer);
+    return returnEntity;
+}
 
-    processActionList(*cPlayer);
-    updatePlayerPosition(*cPlayer, 1.f);
-    
-    sf::Vector2f size = (sf::Vector2f) cPlayerSprite->getTexture()->getSize();
-    cPlayerSprite->setOrigin(size / 2.f);
-    cPlayerSprite->setRotation(cPlayer->degrees - 90);
+void SceneAsteroids::updatePlayer()
+{
+    Entity player = getEntityWithTag(PLAYER);
 
-    int textureWidth = cPlayerSprite->getTexture()->getSize().x;
-    int textureHeight = cPlayerSprite->getTexture()->getSize().y;
+    auto transform = game->getECSManager().getComponent<Transform>(player);
+    auto sprite = game->getECSManager().getComponent<sf::Sprite>(player);
 
-    auto& position = cPlayer->position;
-    if (position.x < -textureWidth) 
-    { 
+    processActionList(*transform);
+    updatePosition(*transform, 1.f);
+
+    int textureWidth = sprite->getTexture()->getSize().x;
+    int textureHeight = sprite->getTexture()->getSize().y;
+
+    auto& position = transform->position;
+    if (position.x < -textureWidth)
+    {
         position.x = game->getWidth();
     }
     else if (position.x > game->getWidth())
@@ -166,20 +201,49 @@ void SceneAsteroids::update()
         position.y = 1 - textureHeight;
     }
 
-    cPlayerSprite->setPosition(position.x, position.y);
+    sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
+    sprite->setOrigin(size / 2.f);
+    sprite->setRotation(transform->degrees - 90);
+    sprite->setPosition(position.x, position.y);
 
-    if (cPlayer->speed > 0)
+    if (transform->speed > 0)
     {
-        cPlayer->speed -= 0.05f;
+        transform->speed -= 0.05f;
 
-        if (cPlayer->speed < 0)
+        if (transform->speed < 0)
         {
-            cPlayer->speed = 0;
+            transform->speed = 0;
         }
     }
 }
 
-void SceneAsteroids::processActionList(Player& cPlayer)
+void SceneAsteroids::updateAsteroid()
+{
+    Entity asteroid = getEntityWithTag(ASTEROID);
+
+    auto transform = game->getECSManager().getComponent<Transform>(asteroid);
+    auto sprite = game->getECSManager().getComponent<sf::Sprite>(asteroid);
+
+    updatePosition(*transform, 1.f);
+
+    int textureWidth = sprite->getTexture()->getSize().x;
+    int textureHeight = sprite->getTexture()->getSize().y;
+    int borderMargin = textureWidth * 2;
+    auto& position = transform->position;
+    if (position.x < -borderMargin || position.x > game->getWidth() + borderMargin ||
+        position.y < -borderMargin || position.y > game->getHeight() + borderMargin)
+    {
+        asteroidCount--;
+        game->getECSManager().removeEntity(asteroid);
+    }
+
+    sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
+    sprite->setOrigin(size / 2.f);
+    sprite->rotate(1.f);
+    sprite->setPosition(position.x, position.y);
+}
+
+void SceneAsteroids::processActionList(Transform& transform)
 {
     auto actionList = game->getECSManager().getAnyComponent<std::vector<Action>>();
 
@@ -191,28 +255,28 @@ void SceneAsteroids::processActionList(Player& cPlayer)
         {
             case THROTTLE:
             {
-                if (cPlayer.speed < maxPlayerSpeed)
+                if (transform.speed < maxPlayerSpeed)
                 {
-                    cPlayer.speed += playerSpeedIncrement;
-                    if (cPlayer.speed > maxPlayerSpeed) cPlayer.speed = maxPlayerSpeed;
+                    transform.speed += playerSpeedIncrement;
+                    if (transform.speed > maxPlayerSpeed) transform.speed = maxPlayerSpeed;
                 }
                 break;
             }
             case ROTATE_LEFT:
             {
-                cPlayer.degrees -= rotationSpeed;
-                if (cPlayer.degrees < 0)
+                transform.degrees -= rotationSpeed;
+                if (transform.degrees < 0)
                 {
-                    cPlayer.degrees = 360 - cPlayer.degrees;
+                    transform.degrees = 360 - transform.degrees;
                 }
                 break;
             }
             case ROTATE_RIGHT:
             {
-                cPlayer.degrees += rotationSpeed;
-                if (cPlayer.degrees > 360)
+                transform.degrees += rotationSpeed;
+                if (transform.degrees > 360)
                 {
-                    cPlayer.degrees = cPlayer.degrees - 360;
+                    transform.degrees = transform.degrees - 360;
                 }
                 break;
             }
@@ -220,12 +284,12 @@ void SceneAsteroids::processActionList(Player& cPlayer)
     }
 }
 
-void SceneAsteroids::updatePlayerPosition(Player& player, float deltaTime) {
-    float radians = player.degrees * (M_PI / 180.0f);
+void SceneAsteroids::updatePosition(Transform& transform, float deltaTime) {
+    float radians = transform.degrees * (M_PI / 180.0f);
 
-    player.velocity.x = std::cos(radians) * player.speed;
-    player.velocity.y = std::sin(radians) * player.speed;
-    player.position = player.position + (player.velocity * deltaTime);
+    transform.velocity.x = std::cos(radians) * transform.speed;
+    transform.velocity.y = std::sin(radians) * transform.speed;
+    transform.position = transform.position + (transform.velocity * deltaTime);
 }
 
 void SceneAsteroids::render(sf::RenderWindow& window)
@@ -234,32 +298,34 @@ void SceneAsteroids::render(sf::RenderWindow& window)
 
     auto entities = game->getECSManager().getEntitiesWithComponent<EntityTag>();
 
-    Entity player = NULL;
     for (auto& entity : entities)
     {
         auto tag = game->getECSManager().getComponent<EntityTag>(entity);
-        if (tag->tag == PLAYER)
-        {
-            // draw player last so player is always visible
-            // too lazy to do sprite layers in this project
-            player = entity;
-        }
-        else
+        if (tag->value == BACKGROUND)
         {
             auto sprite = game->getECSManager().getComponent<sf::Sprite>(entity);
             window.draw(*sprite);
         }
     }
 
-    if (player == NULL)
+    for (auto& entity : entities)
     {
-        std::cerr << "Player entity not found!" << std::endl;
-        exit(-1);
+        auto tag = game->getECSManager().getComponent<EntityTag>(entity);
+        if (tag->value == ASTEROID)
+        {
+            auto sprite = game->getECSManager().getComponent<sf::Sprite>(entity);
+            window.draw(*sprite);
+        }
     }
-    else
+
+    for (auto& entity : entities)
     {
-        auto sprite = game->getECSManager().getComponent<sf::Sprite>(player);
-        window.draw(*sprite);
+        auto tag = game->getECSManager().getComponent<EntityTag>(entity);
+        if (tag->value == PLAYER)
+        {
+            auto sprite = game->getECSManager().getComponent<sf::Sprite>(entity);
+            window.draw(*sprite);
+        }
     }
 
     window.display();
