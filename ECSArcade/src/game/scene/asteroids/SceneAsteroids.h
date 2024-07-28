@@ -18,6 +18,11 @@ struct Transform
     float scale = 1.f;
 };
 
+struct BoundingBox
+{
+    float radius = 0.f;
+};
+
 enum Tag
 {
     UNDEFINED_ENTITY,
@@ -35,7 +40,8 @@ enum Action
 {
     THROTTLE,
     ROTATE_LEFT,
-    ROTATE_RIGHT
+    ROTATE_RIGHT,
+    SHOOT
 };
 
 class SceneAsteroids : public Scene
@@ -56,14 +62,19 @@ private:
     int asteroidCount = 0;
     int asteroidMax = 20;
 
+    bool drawTextures = true;
+    bool drawCollision = false;
+
     void createPlayer();
     void createBackground();
+    void createAsteroid();
     void createActionList();
+
     void processActionList(Transform& transform);
     void updatePosition(Transform& transform, float deltaTime);
-    void createAsteroid();
     void updatePlayer();
     void updateAsteroid(Entity asteroid);
+
     Entity getEntityWithTag(Tag tag);
     std::vector<Entity> getEntitiesWithTag(Tag tag);
 };

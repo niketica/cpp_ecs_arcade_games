@@ -89,7 +89,7 @@ void SceneTitleScreen::input()
                     }
                 }
             }
-            else if (keyInput->keyType == ESCAPE_)
+            else if (keyInput->keyType == ESCAPE_KEY)
             {
                 game->stop();
             }

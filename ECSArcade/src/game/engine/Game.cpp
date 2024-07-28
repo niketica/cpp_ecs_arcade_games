@@ -90,15 +90,24 @@ void Game::input()
             case sf::Keyboard::D:
                 keyType = D;
                 break;
+            case sf::Keyboard::C:
+                keyType = C;
+                break;
+            case sf::Keyboard::T:
+                keyType = T;
+                break;
+            case sf::Keyboard::Space:
+                keyType = SPACE_KEY;
+                break;
             case sf::Keyboard::Escape:
-                keyType = ESCAPE_;
+                keyType = ESCAPE_KEY;
                 break;
             default:
-                keyType = UNDEFINED;
+                keyType = UNDEFINED_KEY;
                 break;
             }
 
-            if (keyType != UNDEFINED)
+            if (keyType != UNDEFINED_KEY)
             {
                 KeyInput keyInput;
                 keyInput.inputType = event.type == sf::Event::KeyPressed ? PRESSED : RELEASED;

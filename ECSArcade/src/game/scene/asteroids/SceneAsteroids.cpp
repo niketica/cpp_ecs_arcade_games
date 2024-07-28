@@ -16,7 +16,6 @@ void SceneAsteroids::init()
     createActionList();
     createPlayer();
     createBackground();
-    // createAsteroid();
 }
 
 void SceneAsteroids::createPlayer()
@@ -34,6 +33,10 @@ void SceneAsteroids::createPlayer()
     sf::Sprite sprite;
     sprite = game->getAssetManager().getSprite("space_ship");
     game->getECSManager().addComponent<sf::Sprite>(entity, sprite);
+
+    BoundingBox boundingBox;
+    boundingBox.radius = 24;
+    game->getECSManager().addComponent<BoundingBox>(entity, boundingBox);
 }
 
 void SceneAsteroids::createAsteroid()
@@ -83,6 +86,10 @@ void SceneAsteroids::createAsteroid()
     game->getECSManager().addComponent<sf::Sprite>(entity, sprite);
     game->getECSManager().addComponent<Transform>(entity, transform);
 
+    BoundingBox boundingBox;
+    boundingBox.radius = (textureWidth / 2.f) - 12.f; // Minus some margin since not the entire texture is an asteroid.
+    game->getECSManager().addComponent<BoundingBox>(entity, boundingBox);
+
     asteroidCount++;
 }
 
@@ -122,25 +129,37 @@ void SceneAsteroids::input()
                     actionList->push_back(THROTTLE);
                 }
             }
-            if (keyInput->keyType == S)
+            else if (keyInput->keyType == S)
             {
 
             }
-            if (keyInput->keyType == A)
+            else if (keyInput->keyType == A)
             {
                 if (!(std::find(actionList->begin(), actionList->end(), ROTATE_LEFT) != actionList->end()))
                 {
                     actionList->push_back(ROTATE_LEFT);
                 }
             }
-            if (keyInput->keyType == D)
+            else if (keyInput->keyType == D)
             {
                 if (!(std::find(actionList->begin(), actionList->end(), ROTATE_RIGHT) != actionList->end()))
                 {
                     actionList->push_back(ROTATE_RIGHT);
                 }
             }
-            if (keyInput->keyType == ESCAPE_)
+            else if (keyInput->keyType == C)
+            {
+                drawCollision = !drawCollision;
+            }
+            else if (keyInput->keyType == T)
+            {
+                drawTextures = !drawTextures;
+            }
+            else if (keyInput->keyType == SPACE_KEY)
+            {
+                std::cout << "Shoot!" << std::endl;
+            }
+            else if (keyInput->keyType == ESCAPE_KEY)
             {
                 std::shared_ptr<Scene> scene = std::make_shared<SceneTitleScreen>(game);
                 game->loadScene(scene);
@@ -255,11 +274,6 @@ void SceneAsteroids::updatePlayer()
         position.y = 1 - textureHeight;
     }
 
-    sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
-    sprite->setOrigin(size / 2.f);
-    sprite->setRotation(transform->degrees - 90);
-    sprite->setPosition(position.x, position.y);
-
     if (transform->speed > 0)
     {
         transform->speed -= 0.05f;
@@ -352,8 +366,11 @@ void SceneAsteroids::render(sf::RenderWindow& window)
         auto tag = game->getECSManager().getComponent<EntityTag>(entity);
         if (tag->value == BACKGROUND)
         {
-            auto sprite = game->getECSManager().getComponent<sf::Sprite>(entity);
-            window.draw(*sprite);
+            if (drawTextures)
+            {
+                auto sprite = game->getECSManager().getComponent<sf::Sprite>(entity);
+                window.draw(*sprite);
+            }
         }
     }
 
@@ -362,16 +379,35 @@ void SceneAsteroids::render(sf::RenderWindow& window)
         auto tag = game->getECSManager().getComponent<EntityTag>(entity);
         if (tag->value == ASTEROID)
         {
-            auto sprite = game->getECSManager().getComponent<sf::Sprite>(entity);
             auto transform = game->getECSManager().getComponent<Transform>(entity);
 
-            sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
-            sprite->setOrigin(size / 2.f);
-            sprite->rotate(1.f);
-            sprite->setPosition(transform->position.x, transform->position.y);
-            sprite->setScale(transform->scale, transform->scale);
+            if (drawTextures)
+            {
+                auto sprite = game->getECSManager().getComponent<sf::Sprite>(entity);
 
-            window.draw(*sprite);
+                sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
+                sprite->setOrigin(size.x / 2.f, size.y / 2.f);
+                sprite->rotate(1.f);
+                sprite->setPosition(transform->position.x, transform->position.y);
+                sprite->setScale(transform->scale, transform->scale);
+
+                window.draw(*sprite);
+            }
+
+            if (drawCollision)
+            {
+                auto boundingBox = game->getECSManager().getComponent<BoundingBox>(entity);
+
+                sf::CircleShape boundingCircle(boundingBox->radius);
+                boundingCircle.setFillColor(sf::Color(0, 0, 0, 0));
+                boundingCircle.setOutlineThickness(1);
+                boundingCircle.setOutlineColor(sf::Color(250, 0, 0));
+                boundingCircle.setOrigin(boundingBox->radius, boundingBox->radius);
+                boundingCircle.setPosition(transform->position.x, transform->position.y);
+                boundingCircle.setScale(transform->scale, transform->scale);
+
+                window.draw(boundingCircle);
+            }
         }
     }
 
@@ -380,8 +416,35 @@ void SceneAsteroids::render(sf::RenderWindow& window)
         auto tag = game->getECSManager().getComponent<EntityTag>(entity);
         if (tag->value == PLAYER)
         {
-            auto sprite = game->getECSManager().getComponent<sf::Sprite>(entity);
-            window.draw(*sprite);
+            auto transform = game->getECSManager().getComponent<Transform>(entity);
+
+            if (drawTextures)
+            {
+                auto sprite = game->getECSManager().getComponent<sf::Sprite>(entity);
+
+                sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
+                sprite->setOrigin(size.x / 2.0f, size.y / 2.0f);
+                sprite->setPosition(transform->position.x, transform->position.y);
+                sprite->setRotation(transform->degrees - 90.f);
+                sprite->setScale(transform->scale, transform->scale);
+
+                window.draw(*sprite);
+            }
+
+            if (drawCollision)
+            {
+                auto boundingBox = game->getECSManager().getComponent<BoundingBox>(entity);
+
+                sf::CircleShape boundingCircle(boundingBox->radius);
+                boundingCircle.setFillColor(sf::Color(0, 0, 0, 0));
+                boundingCircle.setOutlineThickness(1);
+                boundingCircle.setOutlineColor(sf::Color(100, 250, 50));
+                boundingCircle.setOrigin(boundingBox->radius, boundingBox->radius);
+                boundingCircle.setPosition(transform->position.x, transform->position.y);
+                boundingCircle.setScale(transform->scale, transform->scale);
+
+                window.draw(boundingCircle);
+            }
         }
     }
 

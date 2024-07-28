@@ -9,12 +9,15 @@
 
 enum KeyType
 {
-    UNDEFINED,
+    UNDEFINED_KEY,
     W,
     A,
     S,
     D,
-    ESCAPE_
+    C,
+    T,
+    SPACE_KEY,
+    ESCAPE_KEY,
 };
 
 enum InputType
