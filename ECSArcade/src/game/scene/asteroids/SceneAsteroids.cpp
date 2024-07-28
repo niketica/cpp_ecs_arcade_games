@@ -11,10 +11,12 @@ void SceneAsteroids::init()
 
     game->getECSManager().reset();
 
+    srand(time(NULL));
+
     createActionList();
     createPlayer();
     createBackground();
-    createAsteroid();
+    // createAsteroid();
 }
 
 void SceneAsteroids::createPlayer()
@@ -41,16 +43,45 @@ void SceneAsteroids::createAsteroid()
     entityTag.value = ASTEROID;
     game->getECSManager().addComponent<EntityTag>(entity, entityTag);
 
-    Transform transform;
-    transform.position = { 250, 320 };
-    transform.velocity = { 0, 0 };
-    transform.speed = 2.f;
-    transform.degrees = 90.f;
-    game->getECSManager().addComponent<Transform>(entity, transform);
-
     sf::Sprite sprite;
     sprite = game->getAssetManager().getSprite("asteroid");
+
+    int textureWidth = sprite.getTexture()->getSize().x;
+    int textureHeight = sprite.getTexture()->getSize().y;
+
+    Transform transform;
+    if (rand() % 2)
+    {
+        float xPos = rand() % game->getWidth();
+        if (rand() % 2)
+        {
+            transform.position = { xPos, textureHeight * -1.f };
+        }
+        else
+        {
+            transform.position = { xPos, (float) (game->getHeight() + textureHeight) };
+        }
+    }
+    else
+    {
+        float yPos = rand() % game->getHeight();
+        if (rand() % 2)
+        {
+            transform.position = { textureWidth * -1.f, yPos };
+        }
+        else
+        {
+            transform.position = { (float) (game->getWidth() + textureWidth), yPos};
+        }
+    }
+
+    transform.degrees = rand() % 270;
+    transform.velocity = { 0, 0 };
+    transform.speed = (rand() % 4) + 2.f;
+    transform.scale = ((rand() % 80) + 20) * .01f;
+
     game->getECSManager().addComponent<sf::Sprite>(entity, sprite);
+    game->getECSManager().addComponent<Transform>(entity, transform);
 
     asteroidCount++;
 }
@@ -139,9 +170,15 @@ void SceneAsteroids::update()
 {
     updatePlayer();
 
-    if (asteroidCount > 0)
+    if (asteroidCount < asteroidMax)
     {
-        updateAsteroid();
+        createAsteroid();
+    }
+
+    auto asteroids = getEntitiesWithTag(ASTEROID);
+    for (auto asteroid : asteroids)
+    {
+        updateAsteroid(asteroid);
     }
 }
 
@@ -168,6 +205,23 @@ Entity SceneAsteroids::getEntityWithTag(Tag tag)
     }
 
     return returnEntity;
+}
+
+std::vector<Entity> SceneAsteroids::getEntitiesWithTag(Tag tag)
+{
+    auto entities = game->getECSManager().getEntitiesWithComponent<EntityTag>();
+    std::vector<Entity> filtered;
+
+    for (auto entity : entities)
+    {
+        auto entityTag = game->getECSManager().getComponent<EntityTag>(entity);
+        if (entityTag->value == tag)
+        {
+            filtered.push_back(entity);
+        }
+    }
+
+    return filtered;
 }
 
 void SceneAsteroids::updatePlayer()
@@ -217,10 +271,8 @@ void SceneAsteroids::updatePlayer()
     }
 }
 
-void SceneAsteroids::updateAsteroid()
+void SceneAsteroids::updateAsteroid(Entity asteroid)
 {
-    Entity asteroid = getEntityWithTag(ASTEROID);
-
     auto transform = game->getECSManager().getComponent<Transform>(asteroid);
     auto sprite = game->getECSManager().getComponent<sf::Sprite>(asteroid);
 
@@ -235,12 +287,9 @@ void SceneAsteroids::updateAsteroid()
     {
         asteroidCount--;
         game->getECSManager().removeEntity(asteroid);
-    }
 
-    sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
-    sprite->setOrigin(size / 2.f);
-    sprite->rotate(1.f);
-    sprite->setPosition(position.x, position.y);
+        createAsteroid();
+    }
 }
 
 void SceneAsteroids::processActionList(Transform& transform)
@@ -314,6 +363,14 @@ void SceneAsteroids::render(sf::RenderWindow& window)
         if (tag->value == ASTEROID)
         {
             auto sprite = game->getECSManager().getComponent<sf::Sprite>(entity);
+            auto transform = game->getECSManager().getComponent<Transform>(entity);
+
+            sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
+            sprite->setOrigin(size / 2.f);
+            sprite->rotate(1.f);
+            sprite->setPosition(transform->position.x, transform->position.y);
+            sprite->setScale(transform->scale, transform->scale);
+
             window.draw(*sprite);
         }
     }

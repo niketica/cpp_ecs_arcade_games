@@ -15,6 +15,7 @@ struct Transform
     Vec2 velocity;
     float speed = 0.f;
     float degrees = 270.f;
+    float scale = 1.f;
 };
 
 enum Tag
@@ -53,6 +54,7 @@ private:
     const float maxPlayerSpeed = 5.f;
 
     int asteroidCount = 0;
+    int asteroidMax = 20;
 
     void createPlayer();
     void createBackground();
@@ -61,6 +63,7 @@ private:
     void updatePosition(Transform& transform, float deltaTime);
     void createAsteroid();
     void updatePlayer();
-    void updateAsteroid();
+    void updateAsteroid(Entity asteroid);
     Entity getEntityWithTag(Tag tag);
+    std::vector<Entity> getEntitiesWithTag(Tag tag);
 };
