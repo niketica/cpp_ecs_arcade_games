@@ -7,7 +7,19 @@ void AnimationController::updateAnimationFrame(Animation& animation) {
     if (animation.currentCooldown == 0)
     {
         // Advance to the next frame
-        animation.index = (animation.index + 1) % animation.totalFrames;
+        if (animation.loopAnimation)
+        {
+            animation.index = (animation.index + 1) % animation.totalFrames;
+        }
+        else
+        {
+            animation.index++;
+            if (animation.index >= animation.totalFrames)
+            {
+                animation.finished = true;
+                return;
+            }
+        }
     }
     animation.currentCooldown++;
     if (animation.currentCooldown >= animation.cooldown)

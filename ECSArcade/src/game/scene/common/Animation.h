@@ -13,6 +13,8 @@ struct Animation {
     int cooldown = 4;
     int currentCooldown = 0;
     sf::Color alphaColor; // Color to be made transparent
+    bool loopAnimation = false;
+    bool finished = false;
 };
 
 class AnimationController

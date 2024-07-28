@@ -226,8 +226,14 @@ void SceneTitleScreen::render(sf::RenderWindow& window)
 
             explosionAnimation->sprite = sprite.get();
             animationController.updateAnimationFrame(*explosionAnimation);
-
-            window.draw(*sprite);
+            if (explosionAnimation->finished)
+            {
+                game->getECSManager().removeEntity(entity);
+            }
+            else
+            {
+                window.draw(*sprite);
+            }
         }
     }
 
