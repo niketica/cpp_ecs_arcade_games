@@ -19,4 +19,6 @@ private:
     std::map<std::string, sf::Font> fontMap;
     std::map<std::string, sf::Texture> textureMap;
     std::map<std::string, sf::Sprite> spriteMap;
+
+    void applyAlphaMask(sf::Texture& texture, const sf::Color& alphaColor);
 };

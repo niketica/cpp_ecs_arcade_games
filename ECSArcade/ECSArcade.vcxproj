@@ -143,6 +143,7 @@
   <ItemGroup>
     <ClCompile Include="src\ecs\ECSManager.cpp" />
     <ClCompile Include="src\ecs\EntityManager.cpp" />
+    <ClCompile Include="src\game\scene\common\Animation.cpp" />
     <ClCompile Include="src\game\common\Vec2.cpp" />
     <ClCompile Include="src\game\engine\AssetManager.cpp" />
     <ClCompile Include="src\game\engine\Game.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="src\ecs\ECSManager.h" />
     <ClInclude Include="src\ecs\Entity.h" />
     <ClInclude Include="src\ecs\EntityManager.h" />
+    <ClInclude Include="src\game\scene\common\Animation.h" />
     <ClInclude Include="src\game\common\Vec2.h" />
     <ClInclude Include="src\game\engine\AssetManager.h" />
     <ClInclude Include="src\game\engine\Game.h" />

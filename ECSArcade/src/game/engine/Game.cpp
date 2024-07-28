@@ -19,7 +19,11 @@ void Game::init()
 
 void Game::loadAssets()
 {
+    // External sources
     assetManager.addFont("OpenSans", "../External/assets/fonts/open-sans/OpenSans-Regular.ttf");
+    assetManager.addTexture("explosion_realistic", "../External/assets/images/explosion_realistic_01.png");
+
+    // Original sources
     assetManager.addTexture("space_ship", "assets/images/spaceship_01.png");
     assetManager.addTexture("space_background", "assets/images/space_background_02.png");
     assetManager.addTexture("asteroid", "assets/images/asteroid_01.png");

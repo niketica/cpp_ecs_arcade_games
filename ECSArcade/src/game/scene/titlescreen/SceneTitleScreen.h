@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "../common/Scene.h"
+#include "../common/Animation.h"
 #include "../../engine/Game.h"
 #include "../asteroids/SceneAsteroids.h"
 
@@ -32,6 +33,8 @@ private:
     const sf::Color windowClearColor = sf::Color(100, 100, 255);
     const sf::Color activeMenuItemColor = sf::Color(255,255,255);
     const sf::Color inactiveMenuItemColor = sf::Color(180, 180, 180);
+
+    AnimationController animationController;
 
     void createTitle();
     void createMenuItems();
