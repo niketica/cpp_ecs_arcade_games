@@ -42,7 +42,7 @@ void SceneAsteroids::createBackground()
 
     sf::Sprite backgroundSprite;
     backgroundSprite = game->getAssetManager().getSprite("space_background");
-    backgroundSprite.setScale(0.6f, 0.6f);
+    backgroundSprite.setScale(0.5f, 0.5f);
     game->getECSManager().addComponent<sf::Sprite>(eBackground, backgroundSprite);
 }
 
