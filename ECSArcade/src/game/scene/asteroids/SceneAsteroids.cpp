@@ -37,6 +37,9 @@ void SceneAsteroids::createPlayer()
     BoundingBox boundingBox;
     boundingBox.radius = 24;
     game->getECSManager().addComponent<BoundingBox>(entity, boundingBox);
+
+    PlayerStats stats;
+    game->getECSManager().addComponent<PlayerStats>(entity, stats);
 }
 
 void SceneAsteroids::createAsteroid()
@@ -106,6 +109,36 @@ void SceneAsteroids::createBackground()
     game->getECSManager().addComponent<sf::Sprite>(eBackground, backgroundSprite);
 }
 
+void SceneAsteroids::createPlayerExplosion()
+{
+    Entity entity = game->getECSManager().addEntity();
+    EntityTag entityTag;
+    entityTag.value = PLAYER_EXPLOSION;
+    game->getECSManager().addComponent<EntityTag>(entity, entityTag);
+
+    auto player = getEntityWithTag(PLAYER);
+    auto playerTransform = game->getECSManager().getComponent<Transform>(player);
+    Transform transform;
+    transform.position = { playerTransform->position.x, playerTransform->position.y };
+    transform.velocity = { 0, 0 };
+    transform.degrees = 90.f;
+    game->getECSManager().addComponent<Transform>(entity, transform);
+
+    sf::Sprite sprite;
+    sprite = game->getAssetManager().getSprite("explosion_realistic");
+    game->getECSManager().addComponent<sf::Sprite>(entity, sprite);
+
+    Animation explosionAnimation = {
+    3,   // Number of rows in the spritesheet
+    6,   // Number of columns in the spritesheet
+    72,  // Width of each frame (example value)
+    101, // Height of each frame (example value)
+    0,   // Current frame index
+    17,  // Total number of frames available
+    &sprite  // Pointer to the sprite object
+    };
+    game->getECSManager().addComponent<Animation>(entity, explosionAnimation);
+}
 
 void SceneAsteroids::createActionList()
 {
@@ -187,8 +220,6 @@ void SceneAsteroids::input()
 
 void SceneAsteroids::update()
 {
-    updatePlayer();
-
     if (asteroidCount < asteroidMax)
     {
         createAsteroid();
@@ -198,6 +229,14 @@ void SceneAsteroids::update()
     for (auto asteroid : asteroids)
     {
         updateAsteroid(asteroid);
+    }
+
+    auto player = getEntityWithTag(PLAYER);
+    auto playerStats = game->getECSManager().getComponent<PlayerStats>(player);
+    if (playerStats->alive)
+    {
+        updatePlayer();
+        detectPlayerCollision();
     }
 }
 
@@ -355,6 +394,31 @@ void SceneAsteroids::updatePosition(Transform& transform, float deltaTime) {
     transform.position = transform.position + (transform.velocity * deltaTime);
 }
 
+void SceneAsteroids::detectPlayerCollision()
+{
+    auto player = getEntityWithTag(PLAYER);
+    auto playerTransform = game->getECSManager().getComponent<Transform>(player);
+    auto playerBoundingBox = game->getECSManager().getComponent<BoundingBox>(player);
+
+    auto asteroids = getEntitiesWithTag(ASTEROID);
+    for (auto asteroid : asteroids)
+    {
+        auto asteroidTransform = game->getECSManager().getComponent<Transform>(asteroid);
+        auto asteroidBoundingBox = game->getECSManager().getComponent<BoundingBox>(asteroid);
+
+        Vec2 deltaV = playerTransform->position - asteroidTransform->position;
+        float length = deltaV.length();
+
+        if (length <= playerBoundingBox->radius || length <= asteroidBoundingBox->radius)
+        {
+            std::cout << "Hit detected!" << std::endl;
+            auto playerStats = game->getECSManager().getComponent<PlayerStats>(player);
+            playerStats->alive = false;
+            createPlayerExplosion();
+        }
+    }
+}
+
 void SceneAsteroids::render(sf::RenderWindow& window)
 {
     window.clear(windowClearColor);
@@ -411,40 +475,68 @@ void SceneAsteroids::render(sf::RenderWindow& window)
         }
     }
 
-    for (auto& entity : entities)
+    auto player = getEntityWithTag(PLAYER);
+    auto playerStats = game->getECSManager().getComponent<PlayerStats>(player);
+    if (playerStats->alive)
     {
-        auto tag = game->getECSManager().getComponent<EntityTag>(entity);
-        if (tag->value == PLAYER)
+        auto playerTransform = game->getECSManager().getComponent<Transform>(player);
+
+        if (drawTextures)
         {
-            auto transform = game->getECSManager().getComponent<Transform>(entity);
+            auto sprite = game->getECSManager().getComponent<sf::Sprite>(player);
 
-            if (drawTextures)
+            sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
+            sprite->setOrigin(size.x / 2.0f, size.y / 2.0f);
+            sprite->setPosition(playerTransform->position.x, playerTransform->position.y);
+            sprite->setRotation(playerTransform->degrees - 90.f);
+            sprite->setScale(playerTransform->scale, playerTransform->scale);
+
+            window.draw(*sprite);
+        }
+
+        if (drawCollision)
+        {
+            auto boundingBox = game->getECSManager().getComponent<BoundingBox>(player);
+
+            sf::CircleShape boundingCircle(boundingBox->radius);
+            boundingCircle.setFillColor(sf::Color(0, 0, 0, 0));
+            boundingCircle.setOutlineThickness(1);
+            boundingCircle.setOutlineColor(sf::Color(100, 250, 50));
+            boundingCircle.setOrigin(boundingBox->radius, boundingBox->radius);
+            boundingCircle.setPosition(playerTransform->position.x, playerTransform->position.y);
+            boundingCircle.setScale(playerTransform->scale, playerTransform->scale);
+
+            window.draw(boundingCircle);
+        }
+    }
+
+
+    auto playerExplosions = getEntitiesWithTag(PLAYER_EXPLOSION);
+    for (auto playerExplosion : playerExplosions)
+    {
+        if (drawTextures)
+        {
+            auto pExplTransform = game->getECSManager().getComponent<Transform>(playerExplosion);
+            auto explosionAnimation = game->getECSManager().getComponent<Animation>(playerExplosion);
+            auto sprite = game->getECSManager().getComponent<sf::Sprite>(playerExplosion);
+            explosionAnimation->sprite = sprite.get();
+            animationController.updateAnimationFrame(*explosionAnimation);
+
+            explosionAnimation->sprite->setOrigin(explosionAnimation->width / 2.0f, explosionAnimation->height / 2.0f);
+            explosionAnimation->sprite->setPosition(pExplTransform->position.x, pExplTransform->position.y);
+            explosionAnimation->sprite->setRotation(pExplTransform->degrees);
+            explosionAnimation->sprite->setScale(pExplTransform->scale, pExplTransform->scale);
+
+            if (explosionAnimation->finished)
             {
-                auto sprite = game->getECSManager().getComponent<sf::Sprite>(entity);
-
-                sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
-                sprite->setOrigin(size.x / 2.0f, size.y / 2.0f);
-                sprite->setPosition(transform->position.x, transform->position.y);
-                sprite->setRotation(transform->degrees - 90.f);
-                sprite->setScale(transform->scale, transform->scale);
-
+                game->getECSManager().removeEntity(playerExplosion);
+            }
+            else
+            {
                 window.draw(*sprite);
             }
 
-            if (drawCollision)
-            {
-                auto boundingBox = game->getECSManager().getComponent<BoundingBox>(entity);
-
-                sf::CircleShape boundingCircle(boundingBox->radius);
-                boundingCircle.setFillColor(sf::Color(0, 0, 0, 0));
-                boundingCircle.setOutlineThickness(1);
-                boundingCircle.setOutlineColor(sf::Color(100, 250, 50));
-                boundingCircle.setOrigin(boundingBox->radius, boundingBox->radius);
-                boundingCircle.setPosition(transform->position.x, transform->position.y);
-                boundingCircle.setScale(transform->scale, transform->scale);
-
-                window.draw(boundingCircle);
-            }
+            window.draw(*sprite);
         }
     }
 

@@ -11,33 +11,8 @@ void SceneTitleScreen::init()
     game->getECSManager().reset();
     createTitle();
     createMenuItems();
-
-    Entity entity = game->getECSManager().addEntity();
-    EntityTag entityTag;
-    entityTag.value = PLAYER;
-    game->getECSManager().addComponent<EntityTag>(entity, entityTag);
-
-    Transform transform;
-    transform.position = { 400, 300 };
-    transform.velocity = { 0, 0 };
-    transform.degrees = 90.f;
-    game->getECSManager().addComponent<Transform>(entity, transform);
-
-    sf::Sprite sprite;
-    sprite = game->getAssetManager().getSprite("explosion_realistic");
-    game->getECSManager().addComponent<sf::Sprite>(entity, sprite);
-
-    Animation explosionAnimation = {
-    3,   // Number of rows in the spritesheet
-    6,   // Number of columns in the spritesheet
-    72,  // Width of each frame (example value)
-    101, // Height of each frame (example value)
-    0,   // Current frame index
-    17,  // Total number of frames available
-    & sprite  // Pointer to the sprite object
-    };
-    game->getECSManager().addComponent<Animation>(entity, explosionAnimation);
 }
+
 void SceneTitleScreen::createTitle()
 {
     auto& openSans = game->getAssetManager().getFont("OpenSans");
@@ -206,37 +181,6 @@ void SceneTitleScreen::render(sf::RenderWindow& window)
     
     auto title = game->getECSManager().getAnyComponent<Title>();
     window.draw(title->text);
-
-
-    auto entities = game->getECSManager().getEntitiesWithComponent<EntityTag>();
-    for (auto& entity : entities)
-    {
-        auto tag = game->getECSManager().getComponent<EntityTag>(entity);
-        if (tag->value == PLAYER)
-        {
-            auto transform = game->getECSManager().getComponent<Transform>(entity);
-            auto sprite = game->getECSManager().getComponent<sf::Sprite>(entity);
-            auto explosionAnimation = game->getECSManager().getComponent<Animation>(entity);
-
-            sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
-            sprite->setOrigin(size.x / 2.0f, size.y / 2.0f);
-            sprite->setPosition(transform->position.x, transform->position.y);
-            sprite->setRotation(transform->degrees - 90.f);
-            sprite->setScale(transform->scale, transform->scale);
-
-            explosionAnimation->sprite = sprite.get();
-            animationController.updateAnimationFrame(*explosionAnimation);
-            if (explosionAnimation->finished)
-            {
-                game->getECSManager().removeEntity(entity);
-            }
-            else
-            {
-                window.draw(*sprite);
-            }
-        }
-    }
-
 
     window.display();
 }

@@ -3,6 +3,7 @@
 #include "memory"
 #include <cmath>
 #include "../common/Scene.h"
+#include "../common/Animation.h"
 #include "../../engine/Game.h"
 #include "../titlescreen/SceneTitleScreen.h"
 #include "../../common/Vec2.h"
@@ -28,7 +29,8 @@ enum Tag
     UNDEFINED_ENTITY,
     PLAYER,
     BACKGROUND,
-    ASTEROID
+    ASTEROID,
+    PLAYER_EXPLOSION
 };
 
 struct EntityTag
@@ -42,6 +44,11 @@ enum Action
     ROTATE_LEFT,
     ROTATE_RIGHT,
     SHOOT
+};
+
+struct PlayerStats
+{
+    bool alive = true;
 };
 
 class SceneAsteroids : public Scene
@@ -65,15 +72,19 @@ private:
     bool drawTextures = true;
     bool drawCollision = false;
 
+    AnimationController animationController;
+
     void createPlayer();
     void createBackground();
     void createAsteroid();
     void createActionList();
+    void createPlayerExplosion();
 
     void processActionList(Transform& transform);
     void updatePosition(Transform& transform, float deltaTime);
     void updatePlayer();
     void updateAsteroid(Entity asteroid);
+    void detectPlayerCollision();
 
     Entity getEntityWithTag(Tag tag);
     std::vector<Entity> getEntitiesWithTag(Tag tag);
