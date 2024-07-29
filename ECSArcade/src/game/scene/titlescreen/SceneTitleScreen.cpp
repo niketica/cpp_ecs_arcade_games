@@ -17,7 +17,13 @@ void SceneTitleScreen::createTitle()
 {
     auto& openSans = game->getAssetManager().getFont("OpenSans");
     sf::Text titleText("ECS Arcade", openSans, 48);
-    titleText.setPosition(0, 0);
+
+    auto xPos = (game->getWidth() / 2) - (titleText.getLocalBounds().width / 2);
+    auto yPos = 0.f;
+    titleText.setPosition(xPos, yPos);
+    titleText.setStyle(sf::Text::Bold);
+    titleText.setFillColor(titleColor);
+
     Title title;
     title.text = titleText;
     Entity eTitleText = game->getECSManager().addEntity();
@@ -38,8 +44,13 @@ void SceneTitleScreen::createMenuItems()
     for (int index = 0; index < menuOptions.size(); index++)
     {
         std::string strMenuOption = menuOptions.at(index);
-        sf::Text menuOption(strMenuOption, openSans, 24);
-        menuOption.setPosition(0.f, 100.f + verticalSpacing);
+        sf::Text menuOption(strMenuOption, openSans, 30);
+
+        auto xPos = (game->getWidth() / 2) - (menuOption.getLocalBounds().width / 2);
+        auto yPos = 100.f + verticalSpacing;
+        menuOption.setPosition(xPos, yPos);
+        menuOption.setStyle(sf::Text::Bold);
+
         Entity eMenuOption = game->getECSManager().addEntity();
 
         MenuItem menuItem;

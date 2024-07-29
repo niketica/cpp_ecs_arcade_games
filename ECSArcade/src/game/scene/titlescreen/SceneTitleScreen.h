@@ -36,8 +36,9 @@ public:
 
 private:
     const sf::Color windowClearColor = sf::Color(100, 100, 255);
-    const sf::Color activeMenuItemColor = sf::Color(255,255,255);
-    const sf::Color inactiveMenuItemColor = sf::Color(180, 180, 180);
+    const sf::Color titleColor = sf::Color(151, 0, 252);
+    const sf::Color activeMenuItemColor = sf::Color(245, 127, 145);
+    const sf::Color inactiveMenuItemColor = sf::Color(197, 198, 240);
 
     AnimationController animationController;
 
