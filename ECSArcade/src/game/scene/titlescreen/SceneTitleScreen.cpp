@@ -34,10 +34,11 @@ void SceneTitleScreen::createMenuItems()
 {
     auto& openSans = game->getAssetManager().getFont("OpenSans");
     std::vector<std::string> menuOptions;
-    menuOptions.push_back("Asteroids");
-    menuOptions.push_back("Snake");
-    menuOptions.push_back("Tetris");
-    menuOptions.push_back("Pacman");
+    menuOptions.push_back("ASTEROIDS");
+    menuOptions.push_back("SNAKE");
+    menuOptions.push_back("TETRIS");
+    menuOptions.push_back("PACMAN");
+    menuOptions.push_back("EXIT");
 
     int verticalSpacing = 0;
     int index = 0;
@@ -109,9 +110,20 @@ void SceneTitleScreen::input()
                 auto menuItems = game->getECSManager().getComponents<MenuItem>();
                 for (auto& menuItem : menuItems)
                 {
-                    if (menuItem->index == 0 && menuItem->active)
+                    if (!menuItem->active) continue;
+                    switch (menuItem->index)
                     {
+                    case 0:
                         game->loadScene(std::make_shared<SceneAsteroids>(game));
+                        break;
+                    case 1:
+                    case 2:
+                    case 3:
+                        std::cout << "Not yet implemented." << std::endl;
+                        break;
+                    case 4:
+                        game->stop();
+                        break;
                     }
                 }
             }
