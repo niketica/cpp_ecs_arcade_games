@@ -33,6 +33,11 @@ struct KeyInput
     InputType inputType;
 };
 
+struct EntityTag
+{
+    int value = -1;
+};
+
 class Game
 {
 public:
@@ -46,6 +51,9 @@ public:
     AssetManager& getAssetManager();
     int getWidth() const;
     int getHeight() const;
+
+    Entity getEntityWithTag(int tag);
+    std::vector<Entity> getEntitiesWithTag(int tag);
 
 private:
     const Entity maxNrOfEntities = 100;

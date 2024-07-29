@@ -24,6 +24,10 @@ void Game::loadAssets()
     assetManager.addTexture("explosion_realistic", "../External/assets/images/explosion_realistic_01.png");
 
     // Original sources
+    // Title Screen
+    assetManager.addTexture("title_background", "assets/images/title_background.png");
+
+    // Asteroids
     assetManager.addTexture("space_ship", "assets/images/spaceship_01.png");
     assetManager.addTexture("space_background", "assets/images/space_background_02.png");
     assetManager.addTexture("asteroid", "assets/images/asteroid_01.png");
@@ -163,4 +167,46 @@ int Game::getHeight() const
 void Game::loadScene(std::shared_ptr<Scene> scene)
 {
     currentScene = scene;
+}
+
+Entity Game::getEntityWithTag(int tag)
+{
+    auto entities = getECSManager().getEntitiesWithComponent<EntityTag>();
+
+    Entity returnEntity = NULL;
+    for (auto entity : entities)
+    {
+        auto entityTag = getECSManager().getComponent<EntityTag>(entity);
+
+        if (entityTag->value == tag)
+        {
+            returnEntity = entity;
+        }
+    }
+
+    if (returnEntity == NULL)
+    {
+        std::cerr << "ERROR!!! Entity not found with tag " << tag << std::endl;
+        getECSManager().printComponents();
+        exit(-1);
+    }
+
+    return returnEntity;
+}
+
+std::vector<Entity> Game::getEntitiesWithTag(int tag)
+{
+    auto entities = getECSManager().getEntitiesWithComponent<EntityTag>();
+    std::vector<Entity> filtered;
+
+    for (auto entity : entities)
+    {
+        auto entityTag = getECSManager().getComponent<EntityTag>(entity);
+        if (entityTag->value == tag)
+        {
+            filtered.push_back(entity);
+        }
+    }
+
+    return filtered;
 }

@@ -101,7 +101,7 @@ void SceneAsteroids::createAsteroid()
 void SceneAsteroids::createBackground()
 {
     EntityTag backgroundTag;
-    backgroundTag.value = BACKGROUND;
+    backgroundTag.value = ASTEROIDS_BACKGROUND;
 
     sf::Sprite backgroundSprite;
     backgroundSprite = game->getAssetManager().getSprite("space_background");
@@ -144,7 +144,7 @@ void SceneAsteroids::createExplosion(Vec2 position, float scale)
 
 void SceneAsteroids::createLaser()
 {
-    auto player = getEntityWithTag(PLAYER);
+    auto player = game->getEntityWithTag(PLAYER);
     auto playerStats = game->getECSManager().getComponent<PlayerStats>(player);
     if (!playerStats->alive || currentlaserCooldown > 0)
     {
@@ -264,13 +264,13 @@ void SceneAsteroids::update()
         createAsteroid();
     }
 
-    auto asteroids = getEntitiesWithTag(ASTEROID);
+    auto asteroids = game->getEntitiesWithTag(ASTEROID);
     for (auto asteroid : asteroids)
     {
         updateAsteroid(asteroid);
     }
 
-    auto player = getEntityWithTag(PLAYER);
+    auto player = game->getEntityWithTag(PLAYER);
     auto playerStats = game->getECSManager().getComponent<PlayerStats>(player);
     if (playerStats->alive)
     {
@@ -282,64 +282,21 @@ void SceneAsteroids::update()
     {
         currentlaserCooldown--;
     }
-    auto lasers = getEntitiesWithTag(LASER);
+    auto lasers = game->getEntitiesWithTag(LASER);
     for (auto laser : lasers)
     {
         updateLaser(laser);
     }
-    lasers = getEntitiesWithTag(LASER);
+    lasers = game->getEntitiesWithTag(LASER);
     for (auto laser : lasers)
     {
         detectLaserCollision(laser);
     }
 }
 
-Entity SceneAsteroids::getEntityWithTag(AsteroidTag tag)
-{
-    auto entities = game->getECSManager().getEntitiesWithComponent<EntityTag>();
-
-    Entity returnEntity = NULL;
-    for (auto entity : entities)
-    {
-        auto entityTag = game->getECSManager().getComponent<EntityTag>(entity);
-
-        if (entityTag->value == tag)
-        {
-            returnEntity = entity;
-        }
-    }
-
-    if (returnEntity == NULL)
-    {
-        std::cerr << "ERROR!!! Entity not found with tag " << tag << std::endl;
-        game->getECSManager().printComponents();
-        exit(-1);
-    }
-
-    return returnEntity;
-}
-
-std::vector<Entity> SceneAsteroids::getEntitiesWithTag(AsteroidTag tag)
-{
-    auto entities = game->getECSManager().getEntitiesWithComponent<EntityTag>();
-    std::vector<Entity> filtered;
-
-    for (auto entity : entities)
-    {
-        auto entityTag = game->getECSManager().getComponent<EntityTag>(entity);
-        if (entityTag->value == tag)
-        {
-            filtered.push_back(entity);
-        }
-    }
-
-    return filtered;
-}
-
 void SceneAsteroids::updatePlayer()
 {
-    Entity player = getEntityWithTag(PLAYER);
-
+    Entity player = game->getEntityWithTag(PLAYER);
     auto transform = game->getECSManager().getComponent<Transform>(player);
     auto sprite = game->getECSManager().getComponent<sf::Sprite>(player);
 
@@ -468,11 +425,11 @@ void SceneAsteroids::updatePosition(Transform& transform, float deltaTime) {
 
 void SceneAsteroids::detectPlayerCollision()
 {
-    auto player = getEntityWithTag(PLAYER);
+    auto player = game->getEntityWithTag(PLAYER);
     auto playerTransform = game->getECSManager().getComponent<Transform>(player);
     auto playerBoundingBox = game->getECSManager().getComponent<BoundingBox>(player);
 
-    auto asteroids = getEntitiesWithTag(ASTEROID);
+    auto asteroids = game->getEntitiesWithTag(ASTEROID);
     for (auto asteroid : asteroids)
     {
         auto asteroidTransform = game->getECSManager().getComponent<Transform>(asteroid);
@@ -495,7 +452,7 @@ void SceneAsteroids::detectLaserCollision(Entity laser)
     auto laserTransform = game->getECSManager().getComponent<Transform>(laser);
     auto laserBoundingBox = game->getECSManager().getComponent<BoundingBox>(laser);
 
-    auto asteroids = getEntitiesWithTag(ASTEROID);
+    auto asteroids = game->getEntitiesWithTag(ASTEROID);
     for (auto asteroid : asteroids)
     {
         auto asteroidTransform = game->getECSManager().getComponent<Transform>(asteroid);
@@ -525,7 +482,7 @@ void SceneAsteroids::render(sf::RenderWindow& window)
     for (auto& entity : entities)
     {
         auto tag = game->getECSManager().getComponent<EntityTag>(entity);
-        if (tag->value == BACKGROUND)
+        if (tag->value == ASTEROIDS_BACKGROUND)
         {
             if (drawTextures)
             {
@@ -572,7 +529,7 @@ void SceneAsteroids::render(sf::RenderWindow& window)
         }
     }
 
-    auto lasers = getEntitiesWithTag(LASER);
+    auto lasers = game->getEntitiesWithTag(LASER);
     for (auto laser : lasers)
     {
         auto transform = game->getECSManager().getComponent<Transform>(laser);
@@ -605,7 +562,7 @@ void SceneAsteroids::render(sf::RenderWindow& window)
         }
     }
 
-    auto explosions = getEntitiesWithTag(EXPLOSION);
+    auto explosions = game->getEntitiesWithTag(EXPLOSION);
     for (auto explosion : explosions)
     {
         if (drawTextures)
@@ -634,7 +591,7 @@ void SceneAsteroids::render(sf::RenderWindow& window)
         }
     }
 
-    auto player = getEntityWithTag(PLAYER);
+    auto player = game->getEntityWithTag(PLAYER);
     auto playerStats = game->getECSManager().getComponent<PlayerStats>(player);
     if (playerStats->alive)
     {

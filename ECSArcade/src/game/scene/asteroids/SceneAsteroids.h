@@ -28,15 +28,10 @@ enum AsteroidTag
 {
     UNDEFINED_ENTITY,
     PLAYER,
-    BACKGROUND,
+    ASTEROIDS_BACKGROUND,
     ASTEROID,
     EXPLOSION,
     LASER
-};
-
-struct EntityTag
-{
-    AsteroidTag value = UNDEFINED_ENTITY;
 };
 
 enum Action
@@ -92,7 +87,4 @@ private:
     void updateLaser(Entity laser);
     void detectPlayerCollision();
     void detectLaserCollision(Entity laser);
-
-    Entity getEntityWithTag(AsteroidTag tag);
-    std::vector<Entity> getEntitiesWithTag(AsteroidTag tag);
 };

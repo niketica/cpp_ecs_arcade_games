@@ -10,6 +10,7 @@ void SceneTitleScreen::init()
     game->getECSManager().reset();
     createTitle();
     createMenuItems();
+    createBackground();
 }
 
 void SceneTitleScreen::createTitle()
@@ -59,6 +60,20 @@ void SceneTitleScreen::createMenuItems()
 
         verticalSpacing += menuOption.getCharacterSize();
     }
+}
+
+void SceneTitleScreen::createBackground()
+{
+    EntityTag backgroundTag;
+    backgroundTag.value = TITLE_BACKGROUND;
+
+    sf::Sprite backgroundSprite;
+    backgroundSprite = game->getAssetManager().getSprite("title_background");
+    backgroundSprite.setScale(0.5f, 0.5f);
+
+    Entity eBackground = game->getECSManager().addEntity();
+    game->getECSManager().addComponent<EntityTag>(eBackground, backgroundTag);
+    game->getECSManager().addComponent<sf::Sprite>(eBackground, backgroundSprite);
 }
 
 void SceneTitleScreen::input()
@@ -171,6 +186,17 @@ void SceneTitleScreen::updateMenuItems(int activeIndex)
 void SceneTitleScreen::render(sf::RenderWindow& window)
 {
     window.clear(windowClearColor);
+
+    auto entities = game->getECSManager().getEntitiesWithComponent<EntityTag>();
+    for (auto& entity : entities)
+    {
+        auto tag = game->getECSManager().getComponent<EntityTag>(entity);
+        if (tag->value == TITLE_BACKGROUND)
+        {
+            auto sprite = game->getECSManager().getComponent<sf::Sprite>(entity);
+            window.draw(*sprite);
+        }
+    }
 
     auto menuItems = game->getECSManager().getComponents<MenuItem>();
     for (auto& menuItem : menuItems)

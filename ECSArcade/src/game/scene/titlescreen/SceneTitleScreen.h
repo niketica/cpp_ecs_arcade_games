@@ -19,6 +19,11 @@ struct Title
     sf::Text text;
 };
 
+enum TitleTag
+{
+    TITLE_BACKGROUND
+};
+
 class SceneTitleScreen : public Scene
 {
 public:
@@ -38,6 +43,8 @@ private:
 
     void createTitle();
     void createMenuItems();
+    void createBackground();
+
     int getNextActiveMenuItemIndex();
     int getPreviousActiveMenuItemIndex();
     void updateMenuItems(int activeIndex);
