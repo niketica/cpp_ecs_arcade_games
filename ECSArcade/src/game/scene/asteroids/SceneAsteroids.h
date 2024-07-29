@@ -30,7 +30,7 @@ enum AsteroidTag
     PLAYER,
     BACKGROUND,
     ASTEROID,
-    PLAYER_EXPLOSION,
+    EXPLOSION,
     LASER
 };
 
@@ -82,7 +82,7 @@ private:
     void createBackground();
     void createAsteroid();
     void createActionList();
-    void createPlayerExplosion();
+    void createExplosion(Vec2 position);
     void createLaser();
 
     void processActionList(Transform& transform);

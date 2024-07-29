@@ -114,17 +114,15 @@ void SceneAsteroids::createBackground()
     game->getECSManager().addComponent<sf::Sprite>(eBackground, backgroundSprite);
 }
 
-void SceneAsteroids::createPlayerExplosion()
+void SceneAsteroids::createExplosion(Vec2 position)
 {
     Entity entity = game->getECSManager().addEntity();
     EntityTag entityTag;
-    entityTag.value = PLAYER_EXPLOSION;
+    entityTag.value = EXPLOSION;
     game->getECSManager().addComponent<EntityTag>(entity, entityTag);
 
-    auto player = getEntityWithTag(PLAYER);
-    auto playerTransform = game->getECSManager().getComponent<Transform>(player);
     Transform transform;
-    transform.position = { playerTransform->position.x, playerTransform->position.y };
+    transform.position = { position.x, position.y };
     transform.velocity = { 0, 0 };
     transform.degrees = 90.f;
     game->getECSManager().addComponent<Transform>(entity, transform);
@@ -489,7 +487,7 @@ void SceneAsteroids::detectPlayerCollision()
             std::cout << "Hit detected!" << std::endl;
             auto playerStats = game->getECSManager().getComponent<PlayerStats>(player);
             playerStats->alive = false;
-            createPlayerExplosion();
+            createExplosion(playerTransform->position);
         }
     }
 }
@@ -512,6 +510,7 @@ void SceneAsteroids::detectLaserCollision(Entity laser)
         {
             game->getECSManager().removeEntity(asteroid);
             asteroidCount--;
+            createExplosion(asteroidTransform->position);
 
             game->getECSManager().removeEntity(laser);
             return;
@@ -608,25 +607,25 @@ void SceneAsteroids::render(sf::RenderWindow& window)
         }
     }
 
-    auto playerExplosions = getEntitiesWithTag(PLAYER_EXPLOSION);
-    for (auto playerExplosion : playerExplosions)
+    auto explosions = getEntitiesWithTag(EXPLOSION);
+    for (auto explosion : explosions)
     {
         if (drawTextures)
         {
-            auto pExplTransform = game->getECSManager().getComponent<Transform>(playerExplosion);
-            auto explosionAnimation = game->getECSManager().getComponent<Animation>(playerExplosion);
-            auto sprite = game->getECSManager().getComponent<sf::Sprite>(playerExplosion);
+            auto explTransform = game->getECSManager().getComponent<Transform>(explosion);
+            auto explosionAnimation = game->getECSManager().getComponent<Animation>(explosion);
+            auto sprite = game->getECSManager().getComponent<sf::Sprite>(explosion);
             explosionAnimation->sprite = sprite.get();
             animationController.updateAnimationFrame(*explosionAnimation);
 
             explosionAnimation->sprite->setOrigin(explosionAnimation->width / 2.0f, explosionAnimation->height / 2.0f);
-            explosionAnimation->sprite->setPosition(pExplTransform->position.x, pExplTransform->position.y);
-            explosionAnimation->sprite->setRotation(pExplTransform->degrees);
-            explosionAnimation->sprite->setScale(pExplTransform->scale, pExplTransform->scale);
+            explosionAnimation->sprite->setPosition(explTransform->position.x, explTransform->position.y);
+            explosionAnimation->sprite->setRotation(explTransform->degrees);
+            explosionAnimation->sprite->setScale(explTransform->scale, explTransform->scale);
 
             if (explosionAnimation->finished)
             {
-                game->getECSManager().removeEntity(playerExplosion);
+                game->getECSManager().removeEntity(explosion);
             }
             else
             {
