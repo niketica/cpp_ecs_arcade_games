@@ -15,6 +15,7 @@ enum KeyType
     S,
     D,
     C,
+    R,
     T,
     SPACE_KEY,
     ESCAPE_KEY,

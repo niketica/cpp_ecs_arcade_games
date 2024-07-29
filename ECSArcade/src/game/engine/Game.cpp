@@ -27,6 +27,7 @@ void Game::loadAssets()
     assetManager.addTexture("space_ship", "assets/images/spaceship_01.png");
     assetManager.addTexture("space_background", "assets/images/space_background_02.png");
     assetManager.addTexture("asteroid", "assets/images/asteroid_01.png");
+    assetManager.addTexture("laser", "assets/images/laser.png");
 }
 
 void Game::start()
@@ -96,6 +97,9 @@ void Game::input()
                 break;
             case sf::Keyboard::C:
                 keyType = C;
+                break;
+            case sf::Keyboard::R:
+                keyType = R;
                 break;
             case sf::Keyboard::T:
                 keyType = T;

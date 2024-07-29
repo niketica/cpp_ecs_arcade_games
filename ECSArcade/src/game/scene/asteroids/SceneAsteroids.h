@@ -24,18 +24,19 @@ struct BoundingBox
     float radius = 0.f;
 };
 
-enum Tag
+enum AsteroidTag
 {
     UNDEFINED_ENTITY,
     PLAYER,
     BACKGROUND,
     ASTEROID,
-    PLAYER_EXPLOSION
+    PLAYER_EXPLOSION,
+    LASER
 };
 
 struct EntityTag
 {
-    Tag value = UNDEFINED_ENTITY;
+    AsteroidTag value = UNDEFINED_ENTITY;
 };
 
 enum Action
@@ -69,6 +70,9 @@ private:
     int asteroidCount = 0;
     int asteroidMax = 20;
 
+    int laserCooldown = 10;
+    int currentlaserCooldown = 0;
+
     bool drawTextures = true;
     bool drawCollision = false;
 
@@ -79,13 +83,16 @@ private:
     void createAsteroid();
     void createActionList();
     void createPlayerExplosion();
+    void createLaser();
 
     void processActionList(Transform& transform);
     void updatePosition(Transform& transform, float deltaTime);
     void updatePlayer();
     void updateAsteroid(Entity asteroid);
+    void updateLaser(Entity laser);
     void detectPlayerCollision();
+    void detectLaserCollision(Entity laser);
 
-    Entity getEntityWithTag(Tag tag);
-    std::vector<Entity> getEntitiesWithTag(Tag tag);
+    Entity getEntityWithTag(AsteroidTag tag);
+    std::vector<Entity> getEntitiesWithTag(AsteroidTag tag);
 };

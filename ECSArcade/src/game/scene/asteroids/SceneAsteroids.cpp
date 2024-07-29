@@ -16,6 +16,11 @@ void SceneAsteroids::init()
     createActionList();
     createPlayer();
     createBackground();
+
+    asteroidCount = 0;
+    asteroidMax = 20;
+    laserCooldown = 10;
+    currentlaserCooldown = 0;
 }
 
 void SceneAsteroids::createPlayer()
@@ -140,6 +145,39 @@ void SceneAsteroids::createPlayerExplosion()
     game->getECSManager().addComponent<Animation>(entity, explosionAnimation);
 }
 
+void SceneAsteroids::createLaser()
+{
+    auto player = getEntityWithTag(PLAYER);
+    auto playerStats = game->getECSManager().getComponent<PlayerStats>(player);
+    if (!playerStats->alive || currentlaserCooldown > 0)
+    {
+        return;
+    }
+    currentlaserCooldown = laserCooldown;
+
+    auto playerTransform = game->getECSManager().getComponent<Transform>(player);
+
+    Entity entity = game->getECSManager().addEntity();
+    EntityTag entityTag;
+    entityTag.value = LASER;
+    game->getECSManager().addComponent<EntityTag>(entity, entityTag);
+
+    Transform transform;
+    transform.position = { playerTransform->position.x, playerTransform->position.y };
+    transform.velocity = { 0, 0 };
+    transform.degrees = playerTransform->degrees;
+    transform.speed = 4.f;
+    game->getECSManager().addComponent<Transform>(entity, transform);
+
+    sf::Sprite sprite;
+    sprite = game->getAssetManager().getSprite("laser");
+    game->getECSManager().addComponent<sf::Sprite>(entity, sprite);
+
+    BoundingBox boundingBox;
+    boundingBox.radius = 24;
+    game->getECSManager().addComponent<BoundingBox>(entity, boundingBox);
+}
+
 void SceneAsteroids::createActionList()
 {
     Entity eAction = game->getECSManager().addEntity();
@@ -188,9 +226,13 @@ void SceneAsteroids::input()
             {
                 drawTextures = !drawTextures;
             }
+            else if (keyInput->keyType == R)
+            {
+                init();
+            }
             else if (keyInput->keyType == SPACE_KEY)
             {
-                std::cout << "Shoot!" << std::endl;
+                createLaser();
             }
             else if (keyInput->keyType == ESCAPE_KEY)
             {
@@ -238,9 +280,24 @@ void SceneAsteroids::update()
         updatePlayer();
         detectPlayerCollision();
     }
+
+    if (currentlaserCooldown > 0)
+    {
+        currentlaserCooldown--;
+    }
+    auto lasers = getEntitiesWithTag(LASER);
+    for (auto laser : lasers)
+    {
+        updateLaser(laser);
+    }
+    lasers = getEntitiesWithTag(LASER);
+    for (auto laser : lasers)
+    {
+        detectLaserCollision(laser);
+    }
 }
 
-Entity SceneAsteroids::getEntityWithTag(Tag tag)
+Entity SceneAsteroids::getEntityWithTag(AsteroidTag tag)
 {
     auto entities = game->getECSManager().getEntitiesWithComponent<EntityTag>();
 
@@ -265,7 +322,7 @@ Entity SceneAsteroids::getEntityWithTag(Tag tag)
     return returnEntity;
 }
 
-std::vector<Entity> SceneAsteroids::getEntitiesWithTag(Tag tag)
+std::vector<Entity> SceneAsteroids::getEntitiesWithTag(AsteroidTag tag)
 {
     auto entities = game->getECSManager().getEntitiesWithComponent<EntityTag>();
     std::vector<Entity> filtered;
@@ -345,6 +402,24 @@ void SceneAsteroids::updateAsteroid(Entity asteroid)
     }
 }
 
+void SceneAsteroids::updateLaser(Entity laser)
+{
+    auto transform = game->getECSManager().getComponent<Transform>(laser);
+    auto sprite = game->getECSManager().getComponent<sf::Sprite>(laser);
+
+    updatePosition(*transform, transform->speed);
+
+    int textureWidth = sprite->getTexture()->getSize().x;
+    int textureHeight = sprite->getTexture()->getSize().y;
+    int borderMargin = textureWidth * 2;
+    auto& position = transform->position;
+    if (position.x < -borderMargin || position.x > game->getWidth() + borderMargin ||
+        position.y < -borderMargin || position.y > game->getHeight() + borderMargin)
+    {
+        game->getECSManager().removeEntity(laser);
+    }
+}
+
 void SceneAsteroids::processActionList(Transform& transform)
 {
     auto actionList = game->getECSManager().getAnyComponent<std::vector<Action>>();
@@ -419,6 +494,31 @@ void SceneAsteroids::detectPlayerCollision()
     }
 }
 
+void SceneAsteroids::detectLaserCollision(Entity laser)
+{
+    auto laserTransform = game->getECSManager().getComponent<Transform>(laser);
+    auto laserBoundingBox = game->getECSManager().getComponent<BoundingBox>(laser);
+
+    auto asteroids = getEntitiesWithTag(ASTEROID);
+    for (auto asteroid : asteroids)
+    {
+        auto asteroidTransform = game->getECSManager().getComponent<Transform>(asteroid);
+        auto asteroidBoundingBox = game->getECSManager().getComponent<BoundingBox>(asteroid);
+
+        Vec2 deltaV = laserTransform->position - asteroidTransform->position;
+        float length = deltaV.length();
+
+        if (length <= laserBoundingBox->radius || length <= asteroidBoundingBox->radius)
+        {
+            game->getECSManager().removeEntity(asteroid);
+            asteroidCount--;
+
+            game->getECSManager().removeEntity(laser);
+            return;
+        }
+    }
+}
+
 void SceneAsteroids::render(sf::RenderWindow& window)
 {
     window.clear(windowClearColor);
@@ -475,6 +575,68 @@ void SceneAsteroids::render(sf::RenderWindow& window)
         }
     }
 
+    auto lasers = getEntitiesWithTag(LASER);
+    for (auto laser : lasers)
+    {
+        auto transform = game->getECSManager().getComponent<Transform>(laser);
+        if (drawTextures)
+        {
+            auto sprite = game->getECSManager().getComponent<sf::Sprite>(laser);
+
+            sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
+            sprite->setOrigin(size.x / 2.0f, size.y / 2.0f);
+            sprite->setPosition(transform->position.x, transform->position.y);
+            sprite->setRotation(transform->degrees - 90.f);
+            sprite->setScale(transform->scale, transform->scale);
+
+            window.draw(*sprite);
+        }
+
+        if (drawCollision)
+        {
+            auto boundingBox = game->getECSManager().getComponent<BoundingBox>(laser);
+
+            sf::CircleShape boundingCircle(boundingBox->radius);
+            boundingCircle.setFillColor(sf::Color(0, 0, 0, 0));
+            boundingCircle.setOutlineThickness(1);
+            boundingCircle.setOutlineColor(sf::Color(0, 250, 250));
+            boundingCircle.setOrigin(boundingBox->radius, boundingBox->radius);
+            boundingCircle.setPosition(transform->position.x, transform->position.y);
+            boundingCircle.setScale(transform->scale, transform->scale);
+
+            window.draw(boundingCircle);
+        }
+    }
+
+    auto playerExplosions = getEntitiesWithTag(PLAYER_EXPLOSION);
+    for (auto playerExplosion : playerExplosions)
+    {
+        if (drawTextures)
+        {
+            auto pExplTransform = game->getECSManager().getComponent<Transform>(playerExplosion);
+            auto explosionAnimation = game->getECSManager().getComponent<Animation>(playerExplosion);
+            auto sprite = game->getECSManager().getComponent<sf::Sprite>(playerExplosion);
+            explosionAnimation->sprite = sprite.get();
+            animationController.updateAnimationFrame(*explosionAnimation);
+
+            explosionAnimation->sprite->setOrigin(explosionAnimation->width / 2.0f, explosionAnimation->height / 2.0f);
+            explosionAnimation->sprite->setPosition(pExplTransform->position.x, pExplTransform->position.y);
+            explosionAnimation->sprite->setRotation(pExplTransform->degrees);
+            explosionAnimation->sprite->setScale(pExplTransform->scale, pExplTransform->scale);
+
+            if (explosionAnimation->finished)
+            {
+                game->getECSManager().removeEntity(playerExplosion);
+            }
+            else
+            {
+                window.draw(*sprite);
+            }
+
+            window.draw(*sprite);
+        }
+    }
+
     auto player = getEntityWithTag(PLAYER);
     auto playerStats = game->getECSManager().getComponent<PlayerStats>(player);
     if (playerStats->alive)
@@ -507,36 +669,6 @@ void SceneAsteroids::render(sf::RenderWindow& window)
             boundingCircle.setScale(playerTransform->scale, playerTransform->scale);
 
             window.draw(boundingCircle);
-        }
-    }
-
-
-    auto playerExplosions = getEntitiesWithTag(PLAYER_EXPLOSION);
-    for (auto playerExplosion : playerExplosions)
-    {
-        if (drawTextures)
-        {
-            auto pExplTransform = game->getECSManager().getComponent<Transform>(playerExplosion);
-            auto explosionAnimation = game->getECSManager().getComponent<Animation>(playerExplosion);
-            auto sprite = game->getECSManager().getComponent<sf::Sprite>(playerExplosion);
-            explosionAnimation->sprite = sprite.get();
-            animationController.updateAnimationFrame(*explosionAnimation);
-
-            explosionAnimation->sprite->setOrigin(explosionAnimation->width / 2.0f, explosionAnimation->height / 2.0f);
-            explosionAnimation->sprite->setPosition(pExplTransform->position.x, pExplTransform->position.y);
-            explosionAnimation->sprite->setRotation(pExplTransform->degrees);
-            explosionAnimation->sprite->setScale(pExplTransform->scale, pExplTransform->scale);
-
-            if (explosionAnimation->finished)
-            {
-                game->getECSManager().removeEntity(playerExplosion);
-            }
-            else
-            {
-                window.draw(*sprite);
-            }
-
-            window.draw(*sprite);
         }
     }
 
