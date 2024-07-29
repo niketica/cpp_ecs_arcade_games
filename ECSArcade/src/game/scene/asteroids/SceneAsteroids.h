@@ -82,7 +82,7 @@ private:
     void createBackground();
     void createAsteroid();
     void createActionList();
-    void createExplosion(Vec2 position);
+    void createExplosion(Vec2 position, float scale);
     void createLaser();
 
     void processActionList(Transform& transform);

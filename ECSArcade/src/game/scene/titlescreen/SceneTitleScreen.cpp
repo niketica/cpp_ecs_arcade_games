@@ -7,7 +7,6 @@ SceneTitleScreen::SceneTitleScreen(Game* game) : Scene(game)
 
 void SceneTitleScreen::init()
 {
-    std::cout << "SceneTitleScreen - init" << std::endl;
     game->getECSManager().reset();
     createTitle();
     createMenuItems();
