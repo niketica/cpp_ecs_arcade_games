@@ -21,7 +21,6 @@ enum SnakeTag
 
 struct SnakePlayer
 {
-    Vec2 head{ 2, 2 };
     std::vector<Vec2> body;
     SnakeAction currentAction = SNAKE_RIGHT;
     SnakeAction nextAction = SNAKE_RIGHT;
@@ -61,10 +60,12 @@ private:
     void moveSnakeRight(SnakePlayer& player);
     void moveSnakeUp(SnakePlayer& player);
     void moveSnakeDown(SnakePlayer& player);
+    void updateBody(SnakePlayer& player);
 
     void createPlayer();
     void createPickup();
     void checkPickup();
+    void addBody();
     
     Vec2 getRandomPosition();
 };
