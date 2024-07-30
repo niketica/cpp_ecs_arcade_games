@@ -117,9 +117,13 @@ void SceneTitleScreen::input()
                         game->loadScene(std::make_shared<SceneAsteroids>(game));
                         break;
                     case 1:
+                        game->loadScene(std::make_shared<SceneSnake>(game));
+                        break;
                     case 2:
+                        game->loadScene(std::make_shared<SceneTetris>(game));
+                        break;
                     case 3:
-                        std::cout << "Not yet implemented." << std::endl;
+                        game->loadScene(std::make_shared<ScenePacman>(game));
                         break;
                     case 4:
                         game->stop();

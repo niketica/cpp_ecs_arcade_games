@@ -149,6 +149,9 @@
     <ClCompile Include="src\game\engine\Game.cpp" />
     <ClCompile Include="src\game\scene\common\Scene.cpp" />
     <ClCompile Include="src\game\scene\asteroids\SceneAsteroids.cpp" />
+    <ClCompile Include="src\game\scene\pacman\ScenePacman.cpp" />
+    <ClCompile Include="src\game\scene\snake\SceneSnake.cpp" />
+    <ClCompile Include="src\game\scene\tetris\SceneTetris.cpp" />
     <ClCompile Include="src\game\scene\titlescreen\SceneTitleScreen.cpp" />
     <ClCompile Include="src\system\Main.cpp" />
   </ItemGroup>
@@ -164,6 +167,9 @@
     <ClInclude Include="src\game\engine\Game.h" />
     <ClInclude Include="src\game\scene\common\Scene.h" />
     <ClInclude Include="src\game\scene\asteroids\SceneAsteroids.h" />
+    <ClInclude Include="src\game\scene\pacman\ScenePacman.h" />
+    <ClInclude Include="src\game\scene\snake\SceneSnake.h" />
+    <ClInclude Include="src\game\scene\tetris\SceneTetris.h" />
     <ClInclude Include="src\game\scene\titlescreen\SceneTitleScreen.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -34,7 +34,7 @@ enum AsteroidTag
     LASER
 };
 
-enum Action
+enum AsteroidsAction
 {
     THROTTLE,
     ROTATE_LEFT,

@@ -6,6 +6,9 @@
 #include "../common/Animation.h"
 #include "../../engine/Game.h"
 #include "../asteroids/SceneAsteroids.h"
+#include "../snake/SceneSnake.h"
+#include "../tetris/SceneTetris.h"
+#include "../pacman/ScenePacman.h"
 
 struct MenuItem
 {

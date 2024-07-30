@@ -178,8 +178,8 @@ void SceneAsteroids::createLaser()
 void SceneAsteroids::createActionList()
 {
     Entity eAction = game->getECSManager().addEntity();
-    std::vector<Action> actionList;
-    game->getECSManager().addComponent<std::vector<Action>>(eAction, actionList);
+    std::vector<AsteroidsAction> actionList;
+    game->getECSManager().addComponent<std::vector<AsteroidsAction>>(eAction, actionList);
 }
 
 void SceneAsteroids::input()
@@ -189,7 +189,7 @@ void SceneAsteroids::input()
     {
         if (keyInput->inputType == PRESSED)
         {
-            auto actionList = game->getECSManager().getAnyComponent<std::vector<Action>>();
+            auto actionList = game->getECSManager().getAnyComponent<std::vector<AsteroidsAction>>();
             if (keyInput->keyType == W)
             {
                 if (! (std::find(actionList->begin(), actionList->end(), THROTTLE) != actionList->end()))
@@ -240,7 +240,7 @@ void SceneAsteroids::input()
         }
         else if (keyInput->inputType == RELEASED)
         {
-            auto actionList = game->getECSManager().getAnyComponent<std::vector<Action>>();
+            auto actionList = game->getECSManager().getAnyComponent<std::vector<AsteroidsAction>>();
             if (keyInput->keyType == W)
             {
                 actionList->erase(std::remove(actionList->begin(), actionList->end(), THROTTLE), actionList->end());
@@ -376,7 +376,7 @@ void SceneAsteroids::updateLaser(Entity laser)
 
 void SceneAsteroids::processActionList(Transform& transform)
 {
-    auto actionList = game->getECSManager().getAnyComponent<std::vector<Action>>();
+    auto actionList = game->getECSManager().getAnyComponent<std::vector<AsteroidsAction>>();
 
     float rotationSpeed = 6.f;
 
