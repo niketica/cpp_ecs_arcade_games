@@ -35,6 +35,9 @@ struct KeyInput
 
 struct EntityTag
 {
+    EntityTag() {}
+    EntityTag(int value) : value(value) {}
+
     int value = -1;
 };
 
