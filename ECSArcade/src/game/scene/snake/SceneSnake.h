@@ -24,6 +24,7 @@ struct SnakePlayer
     std::vector<Vec2> body;
     SnakeAction currentAction = SNAKE_RIGHT;
     SnakeAction nextAction = SNAKE_RIGHT;
+    bool dead = false;
 };
 
 struct SnakePickup
@@ -61,6 +62,7 @@ private:
     void moveSnakeUp(SnakePlayer& player);
     void moveSnakeDown(SnakePlayer& player);
     void updateBody(SnakePlayer& player);
+    void checkSnakeCollision(SnakePlayer& player);
 
     void createPlayer();
     void createPickup();

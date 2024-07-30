@@ -52,7 +52,9 @@ void SceneSnake::createPickup()
         {
             if (currentCount >= maxPositions)
             {
-                // TODO player wins
+                // Player wins;
+                init();
+                return;
             }
             else
             {
@@ -139,6 +141,19 @@ void SceneSnake::update()
     auto eSnake = game->getEntityWithTag(SNAKE_PLAYER);
     auto player = game->getECSManager().getComponent<SnakePlayer>(eSnake);
 
+    if (player->dead)
+    {
+        if (player->body.size() > 0)
+        {
+            player->body.pop_back();
+        }
+        else
+        {
+            init();
+        }
+        return;
+    }
+
     updateBody(*player);
 
     player->currentAction = player->nextAction;
@@ -161,6 +176,7 @@ void SceneSnake::update()
         break;
     }
 
+    checkSnakeCollision(*player);
     checkPickup();
 }
 
@@ -202,10 +218,25 @@ void SceneSnake::moveSnakeRight(SnakePlayer& player)
 
 void SceneSnake::updateBody(SnakePlayer& player)
 {
-    auto& prevBody = player.body;
-    for (int i = prevBody.size() - 1; i > 0; i--)
+    auto& body = player.body;
+    for (int i = body.size() - 1; i > 0; i--)
     {
-        prevBody.at(i) = prevBody.at(i - 1);
+        body.at(i) = body.at(i - 1);
+    }
+}
+
+void SceneSnake::checkSnakeCollision(SnakePlayer& player)
+{
+    auto& body = player.body;
+    auto head = body.front();
+
+    for (int i = 1; i < body.size(); i++)
+    {
+        if (head == body.at(i))
+        {
+            player.dead = true;
+            return;
+        }
     }
 }
 
