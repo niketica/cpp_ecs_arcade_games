@@ -15,7 +15,8 @@ enum SnakeAction
 
 enum SnakeTag
 {
-    SNAKE
+    SNAKE_PLAYER,
+    SNAKE_PICKUP
 };
 
 struct SnakePlayer
@@ -23,6 +24,14 @@ struct SnakePlayer
     Vec2 head{ 2, 2 };
     std::vector<Vec2> body;
     SnakeAction currentAction = SNAKE_RIGHT;
+    SnakeAction nextAction = SNAKE_RIGHT;
+};
+
+struct SnakePickup
+{
+    SnakePickup(Vec2 position) : position(position) {}
+
+    Vec2 position{ 0, 0 };
 };
 
 class SceneSnake : public Scene
@@ -45,9 +54,17 @@ private:
 
     void createActionList();
     void renderGrid(sf::RenderWindow& window);
+    void renderPlayer(sf::RenderWindow& window);
+    void renderPickup(sf::RenderWindow& window);
 
     void moveSnakeLeft(SnakePlayer& player);
     void moveSnakeRight(SnakePlayer& player);
     void moveSnakeUp(SnakePlayer& player);
     void moveSnakeDown(SnakePlayer& player);
+
+    void createPlayer();
+    void createPickup();
+    void checkPickup();
+    
+    Vec2 getRandomPosition();
 };

@@ -7,11 +7,11 @@ SceneSnake::SceneSnake(Game* game) : Scene(game)
 
 void SceneSnake::init()
 {
-    createActionList();
+    srand(time(NULL));
 
-    auto eSnake = game->getECSManager().addEntity();
-    game->getECSManager().addComponent<EntityTag>(eSnake, EntityTag(SNAKE));
-    game->getECSManager().addComponent<SnakePlayer>(eSnake, SnakePlayer());
+    createActionList();
+    createPlayer();
+    createPickup();
 }
 
 void SceneSnake::createActionList()
@@ -21,9 +21,50 @@ void SceneSnake::createActionList()
     game->getECSManager().addComponent<std::vector<SnakeAction>>(eAction, actionList);
 }
 
+void SceneSnake::createPlayer()
+{
+    auto eSnake = game->getECSManager().addEntity();
+    game->getECSManager().addComponent<EntityTag>(eSnake, EntityTag(SNAKE_PLAYER));
+    game->getECSManager().addComponent<SnakePlayer>(eSnake, SnakePlayer());
+}
+
+void SceneSnake::createPickup()
+{
+    auto eSnake = game->getEntityWithTag(SNAKE_PLAYER);
+    auto player = game->getECSManager().getComponent<SnakePlayer>(eSnake);
+
+    auto& snakeHead = player->head;
+    auto& snakeBody = player->body;
+
+    bool posFound = false;
+
+    Vec2 pos = getRandomPosition();
+
+    while (!posFound)
+    {
+        if (snakeHead == pos || std::find(snakeBody.begin(), snakeBody.end(), pos) != snakeBody.end())
+        {
+            pos = getRandomPosition();
+        }
+        else
+        {
+            posFound = true;
+        }
+    }
+
+    auto ePickup = game->getECSManager().addEntity();
+    game->getECSManager().addComponent<EntityTag>(ePickup, EntityTag(SNAKE_PICKUP));
+    game->getECSManager().addComponent<SnakePickup>(ePickup, SnakePickup(pos));
+}
+
+Vec2 SceneSnake::getRandomPosition()
+{
+    return Vec2(rand() % columns, rand() % rows);
+}
+
 void SceneSnake::input()
 {
-    auto eSnake = game->getEntityWithTag(SNAKE);
+    auto eSnake = game->getEntityWithTag(SNAKE_PLAYER);
     auto player = game->getECSManager().getComponent<SnakePlayer>(eSnake);
 
     auto keyInputs = game->getECSManager().getComponents<KeyInput>();
@@ -36,28 +77,28 @@ void SceneSnake::input()
             {
                 if (player->currentAction != SNAKE_DOWN)
                 {
-                    player->currentAction = SNAKE_UP;
+                    player->nextAction = SNAKE_UP;
                 }
             }
             else if (keyInput->keyType == S)
             {
                 if (player->currentAction != SNAKE_UP)
                 {
-                    player->currentAction = SNAKE_DOWN;
+                    player->nextAction = SNAKE_DOWN;
                 }
             }
             else if (keyInput->keyType == A)
             {
                 if (player->currentAction != SNAKE_RIGHT)
                 {
-                    player->currentAction = SNAKE_LEFT;
+                    player->nextAction = SNAKE_LEFT;
                 }
             }
             else if (keyInput->keyType == D)
             {
                 if (player->currentAction != SNAKE_LEFT)
                 {
-                    player->currentAction = SNAKE_RIGHT;
+                    player->nextAction = SNAKE_RIGHT;
                 }
             }
             else if (keyInput->keyType == ESCAPE_KEY)
@@ -82,9 +123,10 @@ void SceneSnake::update()
     }
     currentMovementCooldown = movementCooldown;
 
-    auto eSnake = game->getEntityWithTag(SNAKE);
+    auto eSnake = game->getEntityWithTag(SNAKE_PLAYER);
     auto player = game->getECSManager().getComponent<SnakePlayer>(eSnake);
 
+    player->currentAction = player->nextAction;
     switch (player->currentAction)
     {
     case SNAKE_UP:
@@ -103,21 +145,63 @@ void SceneSnake::update()
         std::cerr << "Undefined action." << std::endl;
         break;
     }
+
+    checkPickup();
+}
+
+void SceneSnake::moveSnakeUp(SnakePlayer& player)
+{
+    if (player.head.y > 0)
+    {
+        player.head.y--;
+    }
+}
+
+void SceneSnake::moveSnakeDown(SnakePlayer& player)
+{
+    if (player.head.y < rows - 1)
+    {
+        player.head.y++;
+    }
+}
+
+void SceneSnake::moveSnakeLeft(SnakePlayer& player)
+{
+    if (player.head.x > 0)
+    {
+        player.head.x--;
+    }
+}
+
+void SceneSnake::moveSnakeRight(SnakePlayer& player)
+{
+    if (player.head.x < columns - 1)
+    {
+        player.head.x++;
+    }
+}
+
+void SceneSnake::checkPickup()
+{
+    auto eSnake = game->getEntityWithTag(SNAKE_PLAYER);
+    auto player = game->getECSManager().getComponent<SnakePlayer>(eSnake);
+    auto ePickup = game->getEntityWithTag(SNAKE_PICKUP);
+    auto pickup = game->getECSManager().getComponent<SnakePickup>(ePickup);
+
+    if (player->head.x == pickup->position.x &&
+        player->head.y == pickup->position.y)
+    {
+        game->getECSManager().removeEntity(ePickup);
+        createPickup();
+    }
 }
 
 void SceneSnake::render(sf::RenderWindow& window)
 {
     window.clear(windowClearColor);
 
-    auto eSnake = game->getEntityWithTag(SNAKE);
-    auto player = game->getECSManager().getComponent<SnakePlayer>(eSnake);
-    auto head = player->head;
-
-    sf::RectangleShape snakeHead(sf::Vector2f(cellSize, cellSize));
-    snakeHead.setFillColor(sf::Color(0, 255, 0));
-    snakeHead.setPosition(head.x * cellSize, head.y * cellSize);
-    window.draw(snakeHead);
-
+    renderPickup(window);
+    renderPlayer(window);
     renderGrid(window);
 
     window.display();
@@ -151,34 +235,25 @@ void SceneSnake::renderGrid(sf::RenderWindow& window)
     }
 }
 
-void SceneSnake::moveSnakeUp(SnakePlayer& player)
+void SceneSnake::renderPlayer(sf::RenderWindow& window)
 {
-    if (player.head.y > 0)
-    {
-        player.head.y--;
-    }
+    auto eSnake = game->getEntityWithTag(SNAKE_PLAYER);
+    auto player = game->getECSManager().getComponent<SnakePlayer>(eSnake);
+    auto head = player->head;
+
+    sf::RectangleShape snakeHead(sf::Vector2f(cellSize, cellSize));
+    snakeHead.setFillColor(sf::Color(0, 255, 0));
+    snakeHead.setPosition(head.x * cellSize, head.y * cellSize);
+    window.draw(snakeHead);
 }
 
-void SceneSnake::moveSnakeDown(SnakePlayer& player)
+void SceneSnake::renderPickup(sf::RenderWindow& window)
 {
-    if (player.head.y < rows - 1)
-    {
-        player.head.y++;
-    }
-}
+    auto ePickup = game->getEntityWithTag(SNAKE_PICKUP);
+    auto pickup = game->getECSManager().getComponent<SnakePickup>(ePickup);
 
-void SceneSnake::moveSnakeLeft(SnakePlayer& player)
-{
-    if (player.head.x > 0)
-    {
-        player.head.x--;
-    }
-}
-
-void SceneSnake::moveSnakeRight(SnakePlayer& player)
-{
-    if (player.head.x < columns - 1)
-    {
-        player.head.x++;
-    }
+    sf::RectangleShape snakeHead(sf::Vector2f(cellSize, cellSize));
+    snakeHead.setFillColor(sf::Color(255, 255, 255));
+    snakeHead.setPosition(pickup->position.x * cellSize, pickup->position.y * cellSize);
+    window.draw(snakeHead);
 }
