@@ -46,6 +46,10 @@ public:
 
 private:
     const sf::Color windowClearColor = sf::Color(0, 0, 0);
+    const sf::Color snakeHeadColor = sf::Color(0, 200, 0);
+    const sf::Color snakeTailColor = sf::Color(0, 100, 0);
+    const sf::Color pickipColor = sf::Color(200, 0, 0);
+
     const int columns = 9;
     const int rows = 7;
     const int cellSize = 64;

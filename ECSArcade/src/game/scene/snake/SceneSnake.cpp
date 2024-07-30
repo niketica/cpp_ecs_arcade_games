@@ -311,10 +311,20 @@ void SceneSnake::renderPlayer(sf::RenderWindow& window)
     auto eSnake = game->getEntityWithTag(SNAKE_PLAYER);
     auto player = game->getECSManager().getComponent<SnakePlayer>(eSnake);
 
+    bool first = true;
     for (auto& bodyPart : player->body)
     {
         sf::RectangleShape snakeHead(sf::Vector2f(cellSize, cellSize));
-        snakeHead.setFillColor(sf::Color(0, 255, 0));
+
+        if (first)
+        {
+            first = false;
+            snakeHead.setFillColor(snakeHeadColor);
+        }
+        else 
+        {
+            snakeHead.setFillColor(snakeTailColor);
+        }
         snakeHead.setPosition(bodyPart.x * cellSize, bodyPart.y * cellSize);
         window.draw(snakeHead);
     }
@@ -326,7 +336,7 @@ void SceneSnake::renderPickup(sf::RenderWindow& window)
     auto pickup = game->getECSManager().getComponent<SnakePickup>(ePickup);
 
     sf::RectangleShape snakeHead(sf::Vector2f(cellSize, cellSize));
-    snakeHead.setFillColor(sf::Color(255, 255, 255));
+    snakeHead.setFillColor(pickipColor);
     snakeHead.setPosition(pickup->position.x * cellSize, pickup->position.y * cellSize);
     window.draw(snakeHead);
 }
