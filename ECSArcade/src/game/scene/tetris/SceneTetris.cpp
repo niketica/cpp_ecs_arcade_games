@@ -61,9 +61,17 @@ void SceneTetris::input()
         if (keyInput->inputType == PRESSED)
         {
             auto actionList = game->getECSManager().getAnyComponent<std::vector<TetrisAction>>();
-            if (keyInput->keyType == W)
+            if (keyInput->keyType == A)
             {
-                std::cout << "W pressed" << std::endl;
+                actionList->push_back(TETRIS_LEFT);
+            }
+            else if (keyInput->keyType == D)
+            {
+                actionList->push_back(TETRIS_RIGHT);
+            }
+            else if (keyInput->keyType == S)
+            {
+                actionList->push_back(TETRIS_DOWN);
             }
             else if (keyInput->keyType == ESCAPE_KEY)
             {
@@ -95,6 +103,35 @@ void SceneTetris::update()
 
         if (!tetromino->active) continue;
 
+        // checkCollisionBottom(*tetromino);
+
+        auto actionList = game->getECSManager().getAnyComponent<std::vector<TetrisAction>>();
+        for (auto& action : *actionList)
+        {
+            if (action == TETRIS_LEFT)
+            {
+                if (!isCollisionHorizontal(*tetromino, -1))
+                {
+                    tetromino->topLeftPos.x--;
+                }
+            }
+            else if (action == TETRIS_RIGHT)
+            {
+                if (!isCollisionHorizontal(*tetromino, 1))
+                {
+                    tetromino->topLeftPos.x++;
+                }
+            }
+            else if (action == TETRIS_DOWN)
+            {
+                if (!isCollisionBottom(*tetromino))
+                {
+                    tetromino->topLeftPos.y++;
+                }
+            }
+        }
+        actionList->clear();
+
         if (isCollisionBottom(*tetromino))
         {
             tetromino->active = false;
@@ -120,6 +157,39 @@ bool SceneTetris::isCollisionBottom(Tetromino& activeTetromino)
             float yPos = y + activeTetromino.topLeftPos.y;
 
             if (yPos + 1 >= rows || tetrominoOccupiesPosition(Vec2{ xPos, yPos + 1 }))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool SceneTetris::isCollisionHorizontal(Tetromino& activeTetromino, int xOffset)
+{
+    auto shape = shapes[activeTetromino.shapeIndex];
+    for (int x = 0; x < shapeSize; x++)
+    {
+        for (int y = 0; y < shapeSize; y++)
+        {
+            if (shape[y][x] == 0) continue;
+
+            float xPos = x + activeTetromino.topLeftPos.x;
+            float yPos = y + activeTetromino.topLeftPos.y;
+
+            bool collideWallLeft = false;
+            bool collideWallRight = false;
+            if (xOffset > 0)
+            {
+                collideWallRight = xPos >= columns - 1;
+            }
+            else
+            {
+                collideWallLeft = xPos <= 0;
+            }
+
+            if (collideWallLeft || collideWallRight || tetrominoOccupiesPosition(Vec2{ xPos + xOffset, yPos }))
             {
                 return true;
             }
@@ -159,7 +229,6 @@ bool SceneTetris::tetrominoOccupiesPosition(Tetromino& tetromino, Vec2 pos)
 
             if (xPos == (int) pos.x && yPos == (int) pos.y)
             {
-                std::cout << "Yes, position [" << pos.x << "," << pos.y << "] is occupied." << std::endl;
                 return true;
             }
         }

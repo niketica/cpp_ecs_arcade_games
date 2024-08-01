@@ -7,7 +7,6 @@
 
 enum TetrisAction
 {
-    TETRIS_UP,
     TETRIS_DOWN,
     TETRIS_LEFT,
     TETRIS_RIGHT
@@ -106,6 +105,7 @@ private:
     void createNextTetromino();
     void activateNextTetromino();
     bool isCollisionBottom(Tetromino& activeTetromino);
+    bool isCollisionHorizontal(Tetromino& activeTetromino, int xOffset);
     bool tetrominoOccupiesPosition(Vec2 pos);
     bool tetrominoOccupiesPosition(Tetromino& tetromino, Vec2 pos);
 };
