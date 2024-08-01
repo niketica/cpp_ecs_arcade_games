@@ -21,6 +21,8 @@ void SceneTetris::createNextTetromino()
     tetromino.active = false;
     tetromino.next = true;
 
+    if (tetromino.shapeIndex == 2) tetromino.topLeftPos.y--;
+
     EntityTag tag{ TETROMINO };
 
     auto entity = game->getECSManager().addEntity();
@@ -72,6 +74,10 @@ void SceneTetris::input()
             else if (keyInput->keyType == S)
             {
                 actionList->push_back(TETRIS_DOWN);
+            }
+            else if (keyInput->keyType == SPACE_KEY)
+            {
+                actionList->push_back(TETRIS_ROTATE);
             }
             else if (keyInput->keyType == ESCAPE_KEY)
             {
@@ -128,6 +134,10 @@ void SceneTetris::update()
                 {
                     tetromino->topLeftPos.y++;
                 }
+            }
+            else if (action == TETRIS_ROTATE)
+            {
+                rotate(*tetromino);
             }
         }
         actionList->clear();
@@ -234,6 +244,12 @@ bool SceneTetris::tetrominoOccupiesPosition(Tetromino& tetromino, Vec2 pos)
         }
     }
     return false;
+}
+
+void SceneTetris::rotate(Tetromino& tetromino)
+{
+    // TODO check if rotation does not collide with other blocks / edge of screen
+    // TODO rotate shape
 }
 
 void SceneTetris::render(sf::RenderWindow& window)

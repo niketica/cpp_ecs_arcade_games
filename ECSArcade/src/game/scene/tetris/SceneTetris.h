@@ -9,7 +9,8 @@ enum TetrisAction
 {
     TETRIS_DOWN,
     TETRIS_LEFT,
-    TETRIS_RIGHT
+    TETRIS_RIGHT,
+    TETRIS_ROTATE
 };
 
 struct Block
@@ -63,9 +64,9 @@ private:
           { 0, 0, 0, 0 },
           { 0, 0, 0, 0 } },
 
-        { { 1, 1, 1, 0 },
+        { { 0, 0, 0, 0 },
+          { 1, 1, 1, 0 },
           { 0, 1, 0, 0 },
-          { 0, 0, 0, 0 },
           { 0, 0, 0, 0 } },
 
         { { 0, 0, 1, 0 },
@@ -108,4 +109,5 @@ private:
     bool isCollisionHorizontal(Tetromino& activeTetromino, int xOffset);
     bool tetrominoOccupiesPosition(Vec2 pos);
     bool tetrominoOccupiesPosition(Tetromino& tetromino, Vec2 pos);
+    void rotate(Tetromino& tetromino);
 };
