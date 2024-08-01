@@ -80,7 +80,91 @@ void SceneTetris::input()
 
 void SceneTetris::update()
 {
+    if (currentMovementCooldown > 0)
+    {
+        currentMovementCooldown--;
+        return;
+    }
+    currentMovementCooldown = movementCooldown;
 
+    auto eTetrominos = game->getEntitiesWithTag(TETROMINO);
+
+    for (auto& entity : eTetrominos)
+    {
+        auto tetromino = game->getECSManager().getComponent<Tetromino>(entity);
+
+        if (!tetromino->active) continue;
+
+        if (isCollisionBottom(*tetromino))
+        {
+            tetromino->active = false;
+            activateNextTetromino();
+            return;
+        }
+
+        tetromino->topLeftPos.y++;
+        break;
+    }
+}
+
+bool SceneTetris::isCollisionBottom(Tetromino& activeTetromino)
+{
+    auto shape = shapes[activeTetromino.shapeIndex];
+    for (int x = 0; x < shapeSize; x++)
+    {
+        for (int y = 0; y < shapeSize; y++)
+        {
+            if (shape[y][x] == 0) continue;
+
+            float xPos = x + activeTetromino.topLeftPos.x;
+            float yPos = y + activeTetromino.topLeftPos.y;
+
+            if (yPos + 1 >= rows || tetrominoOccupiesPosition(Vec2{ xPos, yPos + 1 }))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool SceneTetris::tetrominoOccupiesPosition(Vec2 pos)
+{
+    auto eTetrominos = game->getEntitiesWithTag(TETROMINO);
+    for (auto& entity : eTetrominos)
+    {
+        auto tetromino = game->getECSManager().getComponent<Tetromino>(entity);
+        if (tetromino->active || tetromino->next) continue;
+
+        if (tetrominoOccupiesPosition(*tetromino, pos))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool SceneTetris::tetrominoOccupiesPosition(Tetromino& tetromino, Vec2 pos)
+{
+    auto shape = shapes[tetromino.shapeIndex];
+    for (int x = 0; x < shapeSize; x++)
+    {
+        for (int y = 0; y < shapeSize; y++)
+        {
+            if (shape[y][x] == 0) continue;
+
+            int xPos = x + tetromino.topLeftPos.x;
+            int yPos = y + tetromino.topLeftPos.y;
+
+            if (xPos == (int) pos.x && yPos == (int) pos.y)
+            {
+                std::cout << "Yes, position [" << pos.x << "," << pos.y << "] is occupied." << std::endl;
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 void SceneTetris::render(sf::RenderWindow& window)
@@ -119,7 +203,6 @@ void SceneTetris::renderBlocks(sf::RenderWindow& window)
                 window.draw(block);
             }
         }
-
     }
 
     for (auto& entity : eTetrominos)

@@ -48,7 +48,7 @@ private:
     const static int columns = 10;
     const static int rows = 20;
     const int cellSize = 23;
-    const int movementCooldown = 30;
+    const int movementCooldown = 10;
     int currentMovementCooldown = 0;
 
     const static int nrOfTetrominos = 7;
@@ -105,4 +105,7 @@ private:
     void renderGrid(sf::RenderWindow& window);
     void createNextTetromino();
     void activateNextTetromino();
+    bool isCollisionBottom(Tetromino& activeTetromino);
+    bool tetrominoOccupiesPosition(Vec2 pos);
+    bool tetrominoOccupiesPosition(Tetromino& tetromino, Vec2 pos);
 };
