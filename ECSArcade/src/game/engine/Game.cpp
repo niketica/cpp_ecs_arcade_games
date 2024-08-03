@@ -37,7 +37,7 @@ void Game::loadAssets()
 void Game::start()
 {
     Entity e = ecsManager.addEntity();
-    auto gameStatus = GameStatus(true);
+    auto gameStatus = GameStatus{ true };
     ecsManager.addComponent<GameStatus>(e, gameStatus);
 
     loop();

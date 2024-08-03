@@ -12,6 +12,10 @@ void SceneTetris::init()
     createActionList();
     createNextTetromino();
     activateNextTetromino();
+
+    Entity eGameStatus = game->getECSManager().addEntity();
+    game->getECSManager().addComponent<EntityTag>(eGameStatus, TETRIS_STATUS);
+    game->getECSManager().addComponent<TetrisStatus>(eGameStatus, {});
 }
 
 void SceneTetris::createNextTetromino()
@@ -55,6 +59,17 @@ void SceneTetris::activateNextTetromino()
 
         tetromino->next = false;
         tetromino->active = true;
+
+        if (isCollisionBottom(*tetromino) && isCollisionHorizontal(*tetromino, 0))
+        {
+            auto eStatus = game->getEntitiesWithTag(TETRIS_STATUS);
+            for (auto& entity : eStatus)
+            {
+                auto status = game->getECSManager().getComponent<TetrisStatus>(entity);
+                status->running = false;
+            }
+        }
+
         break;
     }
 
@@ -88,6 +103,10 @@ void SceneTetris::input()
             {
                 actionList->push_back(TETRIS_DOWN);
             }
+            else if (keyInput->keyType == R)
+            {
+                init();
+            }
             else if (keyInput->keyType == SPACE_KEY)
             {
                 actionList->push_back(TETRIS_ROTATE);
@@ -107,12 +126,23 @@ void SceneTetris::input()
 
 void SceneTetris::update()
 {
-    if (currentMovementCooldown > 0)
+    auto eStatus = game->getEntitiesWithTag(TETRIS_STATUS);
+    for (auto& entity : eStatus)
     {
-        currentMovementCooldown--;
-        return;
+        auto status = game->getECSManager().getComponent<TetrisStatus>(entity);
+
+        if (!status->running)
+        {
+            return;
+        }
+
+        if (status->currentMovementCooldown > 0)
+        {
+            status->currentMovementCooldown--;
+            return;
+        }
+        status->currentMovementCooldown = status->movementCooldown;
     }
-    currentMovementCooldown = movementCooldown;
 
     auto eTetrominos = game->getEntitiesWithTag(TETROMINO);
 
@@ -368,11 +398,21 @@ bool SceneTetris::trimFirstCol(Tetromino& tetromino)
 
 void SceneTetris::processClearRow()
 {
+    auto eStatus = game->getEntitiesWithTag(TETRIS_STATUS);
+
     for (int y = 0; y < rows; y++)
     {
         while (isRowFilled(y))
         {
             clearRow(y);
+
+            for (auto& entity : eStatus)
+            {
+                auto status = game->getECSManager().getComponent<TetrisStatus>(entity);
+                status->rowsCleared++;
+                status->movementCooldown = status->startingCooldown - status->rowsCleared;
+                if (status->movementCooldown < 2) status->movementCooldown = 2;
+            }
         }
     }
 }
@@ -491,6 +531,20 @@ void SceneTetris::renderBlocks(sf::RenderWindow& window)
                 window.draw(block);
             }
         }
+    }
+
+    auto eStatus = game->getEntitiesWithTag(TETRIS_STATUS);
+    for (auto& entity : eStatus)
+    {
+        auto status = game->getECSManager().getComponent<TetrisStatus>(entity);
+        auto& openSans = game->getAssetManager().getFont("OpenSans");
+        sf::Text scoreTxt("Score: " + std::to_string(status->rowsCleared), openSans, 34);
+
+        auto xPos = (columns + 1) * cellSize;
+        auto yPos = (rows * cellSize) / 2;
+        scoreTxt.setPosition(xPos, yPos);
+        scoreTxt.setFillColor(sf::Color(255, 255, 255));
+        window.draw(scoreTxt);
     }
 }
 

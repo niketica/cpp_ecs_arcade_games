@@ -33,10 +33,20 @@ struct Tetromino {
     Shape shape;
 };
 
+struct TetrisStatus
+{
+    int startingCooldown = 20;
+    int movementCooldown = startingCooldown;
+    int currentMovementCooldown = 0;
+    int rowsCleared = 0;
+    bool running = true;
+};
+
 enum TetrisTag
 {
     TETROMINO,
-    TETRIS_BLOCK
+    TETRIS_BLOCK,
+    TETRIS_STATUS
 };
 
 class SceneTetris : public Scene
@@ -55,8 +65,6 @@ private:
     const static int columns = 10;
     const static int rows = 20;
     const int cellSize = 23;
-    const int movementCooldown = 10;
-    int currentMovementCooldown = 0;
 
     const static int nrOfTetrominos = 7;
     const static int shapeSize = 4;

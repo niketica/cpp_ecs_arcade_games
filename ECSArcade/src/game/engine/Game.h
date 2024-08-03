@@ -41,6 +41,11 @@ struct EntityTag
     int value = -1;
 };
 
+struct GameStatus
+{
+    bool running = false;
+};
+
 class Game
 {
 public:

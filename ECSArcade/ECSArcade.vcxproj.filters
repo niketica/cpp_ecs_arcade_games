@@ -62,9 +62,6 @@
     <ClInclude Include="src\ecs\EntityManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\ecs\Component.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\ecs\ComponentManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>

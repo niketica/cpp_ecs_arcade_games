@@ -156,7 +156,6 @@
     <ClCompile Include="src\system\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\ecs\Component.h" />
     <ClInclude Include="src\ecs\ComponentManager.h" />
     <ClInclude Include="src\ecs\ECSManager.h" />
     <ClInclude Include="src\ecs\Entity.h" />

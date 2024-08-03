@@ -2,7 +2,6 @@
 
 #include "Entity.h"
 #include "EntityManager.h"
-#include "Component.h"
 #include "ComponentManager.h"
 
 class ECSManager : public EntityManager, public ComponentManager
