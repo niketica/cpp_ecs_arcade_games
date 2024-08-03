@@ -157,13 +157,34 @@ void SceneTetris::update()
 
         if (isCollisionBottom(*tetromino))
         {
-            tetromino->active = false;
+            updateGrid(*tetromino);
+            game->getECSManager().removeEntity(entity);
             activateNextTetromino();
             return;
         }
 
         tetromino->topLeftPos.y++;
         break;
+    }
+}
+
+void SceneTetris::updateGrid(Tetromino& tetromino)
+{
+    auto& shape = tetromino.shape.value;
+    for (int y = 0; y < shapeSize; y++)
+    {
+        for (int x = 0; x < shapeSize; x++)
+        {
+            if (shape[y][x] == 0) continue;
+
+            float xPos = x + tetromino.topLeftPos.x;
+            float yPos = y + tetromino.topLeftPos.y;
+
+            Block block{ Vec2{xPos, yPos}, tetromino.color };
+            auto eBlock = game->getECSManager().addEntity();
+            game->getECSManager().addComponent<EntityTag>(eBlock, EntityTag { TETRIS_BLOCK });
+            game->getECSManager().addComponent<Block>(eBlock, block);
+        }
     }
 }
 
@@ -179,7 +200,7 @@ bool SceneTetris::isCollisionBottom(Tetromino& activeTetromino)
             float xPos = x + activeTetromino.topLeftPos.x;
             float yPos = y + activeTetromino.topLeftPos.y;
 
-            if (yPos + 1 >= rows || tetrominoOccupiesPosition(Vec2{ xPos, yPos + 1 }))
+            if (yPos + 1 >= rows || blockOccupiesPosition(Vec2{ xPos, yPos + 1 }))
             {
                 return true;
             }
@@ -212,7 +233,7 @@ bool SceneTetris::isCollisionHorizontal(Tetromino& activeTetromino, int xOffset)
                 collideWallLeft = xPos <= 0;
             }
 
-            if (collideWallLeft || collideWallRight || tetrominoOccupiesPosition(Vec2{ xPos + xOffset, yPos }))
+            if (collideWallLeft || collideWallRight || blockOccupiesPosition(Vec2{ xPos + xOffset, yPos }))
             {
                 return true;
             }
@@ -222,40 +243,19 @@ bool SceneTetris::isCollisionHorizontal(Tetromino& activeTetromino, int xOffset)
     return false;
 }
 
-bool SceneTetris::tetrominoOccupiesPosition(Vec2 pos)
+bool SceneTetris::blockOccupiesPosition(Vec2 pos)
 {
-    auto eTetrominos = game->getEntitiesWithTag(TETROMINO);
-    for (auto& entity : eTetrominos)
+    auto eBlocks = game->getEntitiesWithTag(TETRIS_BLOCK);
+    for (auto& entity : eBlocks)
     {
-        auto tetromino = game->getECSManager().getComponent<Tetromino>(entity);
-        if (tetromino->active || tetromino->next) continue;
+        auto block = game->getECSManager().getComponent<Block>(entity);
 
-        if (tetrominoOccupiesPosition(*tetromino, pos))
+        if (block->position.x == pos.x && block->position.y == pos.y)
         {
             return true;
         }
     }
-    return false;
-}
 
-bool SceneTetris::tetrominoOccupiesPosition(Tetromino& tetromino, Vec2 pos)
-{
-    auto shape = tetromino.shape.value;
-    for (int x = 0; x < shapeSize; x++)
-    {
-        for (int y = 0; y < shapeSize; y++)
-        {
-            if (shape[y][x] == 0) continue;
-
-            int xPos = x + tetromino.topLeftPos.x;
-            int yPos = y + tetromino.topLeftPos.y;
-
-            if (xPos == (int) pos.x && yPos == (int) pos.y)
-            {
-                return true;
-            }
-        }
-    }
     return false;
 }
 
@@ -299,7 +299,7 @@ void SceneTetris::rotate(Tetromino& tetromino)
             float xPos = x + tetromino.topLeftPos.x;
             float yPos = y + tetromino.topLeftPos.y;
 
-            if (xPos < 0 || xPos >= columns || yPos < 0 || yPos >= rows || tetrominoOccupiesPosition( Vec2{ xPos, yPos } ))
+            if (xPos < 0 || xPos >= columns || yPos < 0 || yPos >= rows || blockOccupiesPosition( Vec2{ xPos, yPos } ))
             {
                 collision = true;
                 break;
@@ -367,6 +367,25 @@ bool SceneTetris::trimFirstCol(Tetromino& tetromino)
     return true;
 }
 
+void SceneTetris::processClearRow()
+{
+    auto eTetrominos = game->getEntitiesWithTag(TETROMINO);
+
+    for (int y = 0; y < rows; y++)
+    {
+        int rowVal = 0;
+        for (int x = 0; x < columns; x++)
+        {
+            float yPos = y;
+            float xPos = x;
+            if (blockOccupiesPosition(Vec2{ xPos, yPos }))
+            {
+                rowVal++;
+            }
+        }
+    }
+}
+
 void SceneTetris::render(sf::RenderWindow& window)
 {
     window.clear(windowClearColor);
@@ -385,7 +404,7 @@ void SceneTetris::renderBlocks(sf::RenderWindow& window)
     {
         auto tetromino = game->getECSManager().getComponent<Tetromino>(entity);
 
-        if (tetromino->next) continue;
+        if (!tetromino->active) continue;
 
         auto xOffset = tetromino->topLeftPos.x;
         auto yOffset = tetromino->topLeftPos.y;
@@ -405,6 +424,17 @@ void SceneTetris::renderBlocks(sf::RenderWindow& window)
                 window.draw(block);
             }
         }
+    }
+
+    auto eBlocks = game->getEntitiesWithTag(TETRIS_BLOCK);
+    for (auto& entity : eBlocks)
+    {
+        auto block = game->getECSManager().getComponent<Block>(entity);
+
+        sf::RectangleShape blockRect(sf::Vector2f(cellSize, cellSize));
+        blockRect.setFillColor(block->color);
+        blockRect.setPosition(block->position.x * cellSize, block->position.y * cellSize);
+        window.draw(blockRect);
     }
 
     for (auto& entity : eTetrominos)

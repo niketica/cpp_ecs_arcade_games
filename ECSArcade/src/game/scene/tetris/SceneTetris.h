@@ -15,8 +15,8 @@ enum TetrisAction
 
 struct Block
 {
-    sf::Color color{ 30, 30, 30 };
-    Vec2 position;
+    Vec2 position { 0, 0 };
+    sf::Color color{ 0, 0, 0 };
 };
 
 struct Shape
@@ -35,7 +35,8 @@ struct Tetromino {
 
 enum TetrisTag
 {
-    TETROMINO
+    TETROMINO,
+    TETRIS_BLOCK
 };
 
 class SceneTetris : public Scene
@@ -113,9 +114,10 @@ private:
     void activateNextTetromino();
     bool isCollisionBottom(Tetromino& activeTetromino);
     bool isCollisionHorizontal(Tetromino& activeTetromino, int xOffset);
-    bool tetrominoOccupiesPosition(Vec2 pos);
-    bool tetrominoOccupiesPosition(Tetromino& tetromino, Vec2 pos);
+    bool blockOccupiesPosition(Vec2 pos);
     void rotate(Tetromino& tetromino);
     bool trimFirstRow(Tetromino& tetromino);
     bool trimFirstCol(Tetromino& tetromino);
+    void updateGrid(Tetromino& tetromino);
+    void processClearRow();
 };
