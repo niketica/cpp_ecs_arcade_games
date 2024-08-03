@@ -124,8 +124,6 @@ void SceneTetris::update()
 
         if (!tetromino->active) continue;
 
-        // checkCollisionBottom(*tetromino);
-
         auto actionList = game->getECSManager().getAnyComponent<std::vector<TetrisAction>>();
         for (auto& action : *actionList)
         {
@@ -266,6 +264,7 @@ void SceneTetris::rotate(Tetromino& tetromino)
     // TODO check if rotation does not collide with other blocks / edge of screen
 
     auto& currentShape = tetromino.shape.value;
+    int oldShape[shapeSize][shapeSize] = {};
     int newShape[shapeSize][shapeSize] = {};
 
     int newX = shapeSize - 1;
@@ -274,6 +273,7 @@ void SceneTetris::rotate(Tetromino& tetromino)
     {
         for (int y = 0; y < shapeSize; y++)
         {
+            oldShape[y][x] = currentShape[y][x];
             newShape[x][newX - y] = currentShape[y][x];
         }
     }
@@ -288,6 +288,35 @@ void SceneTetris::rotate(Tetromino& tetromino)
 
     do {} while (trimFirstRow(tetromino));
     do {} while (trimFirstCol(tetromino));
+
+    bool collision = false;
+    for (int x = 0; x < shapeSize; x++)
+    {
+        for (int y = 0; y < shapeSize; y++)
+        {
+            if (currentShape[y][x] == 0) continue;
+
+            float xPos = x + tetromino.topLeftPos.x;
+            float yPos = y + tetromino.topLeftPos.y;
+
+            if (xPos < 0 || xPos >= columns || yPos < 0 || yPos >= rows || tetrominoOccupiesPosition( Vec2{ xPos, yPos } ))
+            {
+                collision = true;
+                break;
+            }
+        }
+    }
+
+    if (collision)
+    {
+        for (int x = 0; x < shapeSize; x++)
+        {
+            for (int y = 0; y < shapeSize; y++)
+            {
+                currentShape[y][x] = oldShape[y][x];
+            }
+        }
+    }
 }
 
 bool SceneTetris::trimFirstRow(Tetromino& tetromino)
