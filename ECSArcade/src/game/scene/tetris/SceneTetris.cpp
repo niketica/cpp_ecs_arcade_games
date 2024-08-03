@@ -23,6 +23,19 @@ void SceneTetris::createNextTetromino()
 
     if (tetromino.shapeIndex == 2) tetromino.topLeftPos.y--;
 
+    auto& shape = shapes[tetromino.shapeIndex];
+    Shape tShape = {};
+
+    for (int x = 0; x < shapeSize; x++)
+    {
+        for (int y = 0; y < shapeSize; y++)
+        {
+            tShape.value[y][x] = shape[y][x];
+        }
+    }
+
+    tetromino.shape = tShape;
+
     EntityTag tag{ TETROMINO };
 
     auto entity = game->getECSManager().addEntity();
@@ -156,7 +169,7 @@ void SceneTetris::update()
 
 bool SceneTetris::isCollisionBottom(Tetromino& activeTetromino)
 {
-    auto shape = shapes[activeTetromino.shapeIndex];
+    auto shape = activeTetromino.shape.value;
     for (int x = 0; x < shapeSize; x++)
     {
         for (int y = 0; y < shapeSize; y++)
@@ -178,7 +191,7 @@ bool SceneTetris::isCollisionBottom(Tetromino& activeTetromino)
 
 bool SceneTetris::isCollisionHorizontal(Tetromino& activeTetromino, int xOffset)
 {
-    auto shape = shapes[activeTetromino.shapeIndex];
+    auto shape = activeTetromino.shape.value;
     for (int x = 0; x < shapeSize; x++)
     {
         for (int y = 0; y < shapeSize; y++)
@@ -227,7 +240,7 @@ bool SceneTetris::tetrominoOccupiesPosition(Vec2 pos)
 
 bool SceneTetris::tetrominoOccupiesPosition(Tetromino& tetromino, Vec2 pos)
 {
-    auto shape = shapes[tetromino.shapeIndex];
+    auto shape = tetromino.shape.value;
     for (int x = 0; x < shapeSize; x++)
     {
         for (int y = 0; y < shapeSize; y++)
@@ -249,7 +262,27 @@ bool SceneTetris::tetrominoOccupiesPosition(Tetromino& tetromino, Vec2 pos)
 void SceneTetris::rotate(Tetromino& tetromino)
 {
     // TODO check if rotation does not collide with other blocks / edge of screen
-    // TODO rotate shape
+
+    auto& currentShape = tetromino.shape.value;
+    int newShape[shapeSize][shapeSize] = {};
+
+    int newX = shapeSize - 1;
+
+    for (int x = 0; x < shapeSize; x++)
+    {
+        for (int y = 0; y < shapeSize; y++)
+        {
+            newShape[x][newX - y] = currentShape[y][x];
+        }
+    }
+
+    for (int x = 0; x < shapeSize; x++)
+    {
+        for (int y = 0; y < shapeSize; y++)
+        {
+            currentShape[y][x] = newShape[y][x];
+        }
+    }
 }
 
 void SceneTetris::render(sf::RenderWindow& window)
@@ -275,7 +308,7 @@ void SceneTetris::renderBlocks(sf::RenderWindow& window)
         auto xOffset = tetromino->topLeftPos.x;
         auto yOffset = tetromino->topLeftPos.y;
 
-        auto shape = shapes[tetromino->shapeIndex];
+        auto shape = tetromino->shape.value;
         for (int x = 0; x < shapeSize; x++)
         {
             for (int y = 0; y < shapeSize; y++)
@@ -299,7 +332,7 @@ void SceneTetris::renderBlocks(sf::RenderWindow& window)
         auto xOffset = columns + 2;
         auto yOffset = 4;
 
-        auto shape = shapes[tetromino->shapeIndex];
+        auto shape = tetromino->shape.value;
         for (int x = 0; x < shapeSize; x++)
         {
             for (int y = 0; y < shapeSize; y++)

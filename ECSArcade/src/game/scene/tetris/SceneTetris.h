@@ -19,12 +19,18 @@ struct Block
     Vec2 position;
 };
 
+struct Shape
+{
+    int value[4][4];
+};
+
 struct Tetromino {
     sf::Color color;
     int shapeIndex = 0;
     Vec2 topLeftPos;
     bool next = false;
     bool active = false;
+    Shape shape;
 };
 
 enum TetrisTag
