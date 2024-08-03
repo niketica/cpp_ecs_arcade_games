@@ -21,8 +21,6 @@ void SceneTetris::createNextTetromino()
     tetromino.active = false;
     tetromino.next = true;
 
-    if (tetromino.shapeIndex == 2) tetromino.topLeftPos.y--;
-
     auto& shape = shapes[tetromino.shapeIndex];
     Shape tShape = {};
 
