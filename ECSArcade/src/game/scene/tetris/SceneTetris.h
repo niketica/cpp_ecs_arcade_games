@@ -116,4 +116,6 @@ private:
     bool tetrominoOccupiesPosition(Vec2 pos);
     bool tetrominoOccupiesPosition(Tetromino& tetromino, Vec2 pos);
     void rotate(Tetromino& tetromino);
+    bool trimFirstRow(Tetromino& tetromino);
+    bool trimFirstCol(Tetromino& tetromino);
 };

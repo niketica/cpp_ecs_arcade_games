@@ -35,6 +35,8 @@ void SceneTetris::createNextTetromino()
     }
 
     tetromino.shape = tShape;
+    do {} while (trimFirstRow(tetromino));
+    do {} while (trimFirstCol(tetromino));
 
     EntityTag tag{ TETROMINO };
 
@@ -283,6 +285,87 @@ void SceneTetris::rotate(Tetromino& tetromino)
             currentShape[y][x] = newShape[y][x];
         }
     }
+
+    do {} while (trimFirstRow(tetromino));
+    do {} while (trimFirstCol(tetromino));
+}
+
+bool SceneTetris::trimFirstRow(Tetromino& tetromino)
+{
+    auto& currentShape = tetromino.shape.value;
+    bool trimFirstRow = true;
+    for (int x = 0; x < shapeSize; x++)
+    {
+        if (currentShape[0][x] > 0)
+        {
+            trimFirstRow = false;
+            break;
+        }
+    }
+
+    if (!trimFirstRow) return false;
+
+    int newShape[shapeSize][shapeSize] = {};
+    for (int x = 0; x < shapeSize; x++)
+    {
+        for (int y = 0; y < shapeSize - 1; y++)
+        {
+            newShape[y][x] = currentShape[y + 1][x];
+        }
+    }
+    for (int x = 0; x < shapeSize; x++)
+    {
+        newShape[shapeSize-1][x] = 0;
+    }
+
+    for (int x = 0; x < shapeSize; x++)
+    {
+        for (int y = 0; y < shapeSize; y++)
+        {
+            currentShape[y][x] = newShape[y][x];
+        }
+    }
+
+    return true;
+}
+
+bool SceneTetris::trimFirstCol(Tetromino& tetromino)
+{
+    auto& currentShape = tetromino.shape.value;
+    bool trimFirstCol = true;
+    for (int y = 0; y < shapeSize; y++)
+    {
+        if (currentShape[y][0] > 0)
+        {
+            trimFirstCol = false;
+            break;
+        }
+    }
+
+    if (!trimFirstCol) return false;
+
+    int newShape[shapeSize][shapeSize] = {};
+    for (int x = 0; x < shapeSize - 1; x++)
+    {
+        for (int y = 0; y < shapeSize; y++)
+        {
+            newShape[y][x] = currentShape[y][x + 1];
+        }
+    }
+    for (int y = 0; y < shapeSize; y++)
+    {
+        newShape[y][shapeSize - 1] = 0;
+    }
+
+    for (int x = 0; x < shapeSize; x++)
+    {
+        for (int y = 0; y < shapeSize; y++)
+        {
+            currentShape[y][x] = newShape[y][x];
+        }
+    }
+
+    return true;
 }
 
 void SceneTetris::render(sf::RenderWindow& window)
@@ -313,10 +396,12 @@ void SceneTetris::renderBlocks(sf::RenderWindow& window)
         {
             for (int y = 0; y < shapeSize; y++)
             {
+                sf::Color color = tetromino->color;
+                // if (shape[y][x] == 0) color = {255,255,255};
                 if (shape[y][x] == 0) continue;
 
                 sf::RectangleShape block(sf::Vector2f(cellSize, cellSize));
-                block.setFillColor(tetromino->color);
+                block.setFillColor(color);
                 block.setPosition((x + xOffset) * cellSize, (y + yOffset) * cellSize);
                 window.draw(block);
             }
