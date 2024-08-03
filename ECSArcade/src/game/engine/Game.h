@@ -59,7 +59,7 @@ public:
     std::vector<Entity> getEntitiesWithTag(int tag);
 
 private:
-    const Entity maxNrOfEntities = 100;
+    const Entity maxNrOfEntities = 5000;
     ECSManager ecsManager;
     AssetManager assetManager;
     sf::RenderWindow window;
