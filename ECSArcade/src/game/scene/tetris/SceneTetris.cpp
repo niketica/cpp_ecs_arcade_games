@@ -293,36 +293,21 @@ void SceneTetris::rotate(Tetromino& tetromino)
 bool SceneTetris::trimFirstRow(Tetromino& tetromino)
 {
     auto& currentShape = tetromino.shape.value;
-    bool trimFirstRow = true;
+
     for (int x = 0; x < shapeSize; x++)
     {
         if (currentShape[0][x] > 0)
         {
-            trimFirstRow = false;
-            break;
+            return false;
         }
     }
 
-    if (!trimFirstRow) return false;
-
-    int newShape[shapeSize][shapeSize] = {};
-    for (int x = 0; x < shapeSize; x++)
+    for (int y = 0; y < shapeSize - 1; y++)
     {
-        for (int y = 0; y < shapeSize - 1; y++)
+        for (int x = 0; x < shapeSize; x++)
         {
-            newShape[y][x] = currentShape[y + 1][x];
-        }
-    }
-    for (int x = 0; x < shapeSize; x++)
-    {
-        newShape[shapeSize-1][x] = 0;
-    }
-
-    for (int x = 0; x < shapeSize; x++)
-    {
-        for (int y = 0; y < shapeSize; y++)
-        {
-            currentShape[y][x] = newShape[y][x];
+            currentShape[y][x] = currentShape[y + 1][x];
+            currentShape[shapeSize - 1][x] = 0;
         }
     }
 
@@ -332,37 +317,22 @@ bool SceneTetris::trimFirstRow(Tetromino& tetromino)
 bool SceneTetris::trimFirstCol(Tetromino& tetromino)
 {
     auto& currentShape = tetromino.shape.value;
-    bool trimFirstCol = true;
+
     for (int y = 0; y < shapeSize; y++)
     {
         if (currentShape[y][0] > 0)
         {
-            trimFirstCol = false;
-            break;
+            return false;
         }
     }
 
-    if (!trimFirstCol) return false;
-
-    int newShape[shapeSize][shapeSize] = {};
-    for (int x = 0; x < shapeSize - 1; x++)
-    {
-        for (int y = 0; y < shapeSize; y++)
-        {
-            newShape[y][x] = currentShape[y][x + 1];
-        }
-    }
     for (int y = 0; y < shapeSize; y++)
     {
-        newShape[y][shapeSize - 1] = 0;
-    }
-
-    for (int x = 0; x < shapeSize; x++)
-    {
-        for (int y = 0; y < shapeSize; y++)
+        for (int x = 0; x < shapeSize - 1; x++)
         {
-            currentShape[y][x] = newShape[y][x];
+            currentShape[y][x] = currentShape[y][x + 1];
         }
+        currentShape[y][shapeSize - 1] = 0;
     }
 
     return true;
