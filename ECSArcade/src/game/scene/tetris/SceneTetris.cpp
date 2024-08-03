@@ -159,6 +159,7 @@ void SceneTetris::update()
         {
             updateGrid(*tetromino);
             game->getECSManager().removeEntity(entity);
+            processClearRow();
             activateNextTetromino();
             return;
         }
@@ -369,19 +370,52 @@ bool SceneTetris::trimFirstCol(Tetromino& tetromino)
 
 void SceneTetris::processClearRow()
 {
-    auto eTetrominos = game->getEntitiesWithTag(TETROMINO);
-
     for (int y = 0; y < rows; y++)
     {
-        int rowVal = 0;
-        for (int x = 0; x < columns; x++)
+        while (isRowFilled(y))
         {
-            float yPos = y;
-            float xPos = x;
-            if (blockOccupiesPosition(Vec2{ xPos, yPos }))
-            {
-                rowVal++;
-            }
+            clearRow(y);
+        }
+    }
+}
+
+bool SceneTetris::isRowFilled(int y)
+{
+    int rowValue = 0;
+
+    auto eBlocks = game->getEntitiesWithTag(TETRIS_BLOCK);
+    for (auto& entity : eBlocks)
+    {
+        auto block = game->getECSManager().getComponent<Block>(entity);
+
+        if (block->position.y == y)
+        {
+            rowValue++;
+        }
+    }
+
+    return rowValue == columns;
+}
+
+void SceneTetris::clearRow(int y)
+{
+    for (auto& entity : game->getEntitiesWithTag(TETRIS_BLOCK))
+    {
+        auto block = game->getECSManager().getComponent<Block>(entity);
+
+        if (block->position.y == y)
+        {
+            game->getECSManager().removeEntity(entity);
+        }
+    }
+
+    for (auto& entity : game->getEntitiesWithTag(TETRIS_BLOCK))
+    {
+        auto block = game->getECSManager().getComponent<Block>(entity);
+
+        if (block->position.y < y)
+        {
+            block->position.y++;
         }
     }
 }

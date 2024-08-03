@@ -120,4 +120,6 @@ private:
     bool trimFirstCol(Tetromino& tetromino);
     void updateGrid(Tetromino& tetromino);
     void processClearRow();
+    bool isRowFilled(int y);
+    void clearRow(int y);
 };
