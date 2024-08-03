@@ -130,4 +130,5 @@ private:
     void processClearRow();
     bool isRowFilled(int y);
     void clearRow(int y);
+    void processActions();
 };

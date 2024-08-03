@@ -136,6 +136,8 @@ void SceneTetris::update()
             return;
         }
 
+        processActions();
+
         if (status->currentMovementCooldown > 0)
         {
             status->currentMovementCooldown--;
@@ -144,6 +146,30 @@ void SceneTetris::update()
         status->currentMovementCooldown = status->movementCooldown;
     }
 
+    auto eTetrominos = game->getEntitiesWithTag(TETROMINO);
+
+    for (auto& entity : eTetrominos)
+    {
+        auto tetromino = game->getECSManager().getComponent<Tetromino>(entity);
+
+        if (!tetromino->active) continue;
+
+        if (isCollisionBottom(*tetromino))
+        {
+            updateGrid(*tetromino);
+            game->getECSManager().removeEntity(entity);
+            processClearRow();
+            activateNextTetromino();
+            return;
+        }
+
+        tetromino->topLeftPos.y++;
+        break;
+    }
+}
+
+void SceneTetris::processActions()
+{
     auto eTetrominos = game->getEntitiesWithTag(TETROMINO);
 
     for (auto& entity : eTetrominos)
@@ -182,17 +208,6 @@ void SceneTetris::update()
             }
         }
         actionList->clear();
-
-        if (isCollisionBottom(*tetromino))
-        {
-            updateGrid(*tetromino);
-            game->getECSManager().removeEntity(entity);
-            processClearRow();
-            activateNextTetromino();
-            return;
-        }
-
-        tetromino->topLeftPos.y++;
         break;
     }
 }
