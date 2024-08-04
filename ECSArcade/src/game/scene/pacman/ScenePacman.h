@@ -19,7 +19,7 @@ public:
 
     void init();
     void input();
-    void update();
+    void update(float deltaTime);
     void render(sf::RenderWindow& window);
 
 private:

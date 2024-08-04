@@ -12,7 +12,7 @@ public:
 
     virtual void init() = 0;
     virtual void input() = 0;
-    virtual void update() = 0;
+    virtual void update(float deltaTime) = 0;
     virtual void render(sf::RenderWindow& window) = 0;
 
 protected:

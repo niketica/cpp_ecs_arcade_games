@@ -124,7 +124,7 @@ void SceneTetris::input()
     }
 }
 
-void SceneTetris::update()
+void SceneTetris::update(float deltaTime)
 {
     auto eStatus = game->getEntitiesWithTag(TETRIS_STATUS);
     for (auto& entity : eStatus)

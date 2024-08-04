@@ -10,7 +10,6 @@ void Game::init()
     const int wWidth = 640;
     const int wHeight = 480;
     window.create(sf::VideoMode(wWidth, wHeight), "ECS Arcade");
-    window.setFramerateLimit(60);
 
     loadAssets();
 
@@ -56,12 +55,42 @@ void Game::stop()
 
 void Game::loop()
 {
+    auto lastUpdate = std::chrono::system_clock::now();
+    auto now = std::chrono::system_clock::now();
+
     auto gameStatus = ecsManager.getAnyComponent<GameStatus>();
+
+    float timeSlice = 1.f / 60.f;
+    float accumulator = 0.f;
+
+    int fps = 0;
+    float fpsCount = 0.f;
+
     while (gameStatus->running)
     {
+        now = std::chrono::system_clock::now();
+        std::chrono::duration<float> deltaTime = now - lastUpdate;
+        float fDeltaTime = deltaTime.count();
+        lastUpdate = now;
+
+        accumulator += fDeltaTime;
+
         input();
-        update();
+        while (accumulator > timeSlice)
+        {
+            update(fDeltaTime);
+            accumulator -= timeSlice;
+        }
         render();
+
+        fpsCount += fDeltaTime;
+        fps++;
+        if (fpsCount >= 1.f)
+        {
+            fpsCount -= 1.f;
+            std::cout << "FPS = " << fps << std::endl;
+            fps = 0;
+        }
     }
 }
 
@@ -134,9 +163,9 @@ void Game::input()
     currentScene->input();
 }
 
-void Game::update()
+void Game::update(float deltaTime)
 {
-    currentScene->update();
+    currentScene->update(deltaTime);
 }
 
 void Game::render()

@@ -131,7 +131,7 @@ void SceneSnake::input()
     }
 }
 
-void SceneSnake::update()
+void SceneSnake::update(float deltaTime)
 {
     if (currentMovementCooldown > 0)
     {

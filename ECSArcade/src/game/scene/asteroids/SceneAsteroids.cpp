@@ -257,7 +257,7 @@ void SceneAsteroids::input()
     }
 }
 
-void SceneAsteroids::update()
+void SceneAsteroids::update(float deltaTime)
 {
     if (asteroidCount < asteroidMax)
     {

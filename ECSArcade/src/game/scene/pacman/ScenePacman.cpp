@@ -42,7 +42,7 @@ void ScenePacman::input()
     }
 }
 
-void ScenePacman::update()
+void ScenePacman::update(float deltaTime)
 {
 
 }

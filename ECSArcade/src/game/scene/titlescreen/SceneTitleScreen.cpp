@@ -146,7 +146,7 @@ void SceneTitleScreen::input()
     }
 }
 
-void SceneTitleScreen::update()
+void SceneTitleScreen::update(float deltaTime)
 {
 }
 

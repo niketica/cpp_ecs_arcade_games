@@ -1,6 +1,7 @@
 #pragma once
 
 #include "memory"
+#include "chrono"
 #include "SFML/Graphics.hpp"
 #include "../../ecs/ECSManager.h"
 #include "AssetManager.h"
@@ -74,6 +75,6 @@ private:
     void loadAssets();
     void loop();
     void input();
-    void update();
+    void update(float deltaTime);
     void render();
 };
