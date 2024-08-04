@@ -216,7 +216,6 @@ Entity Game::getEntityWithTag(int tag)
     if (returnEntity == NULL)
     {
         std::cerr << "ERROR!!! Entity not found with tag " << tag << std::endl;
-        getECSManager().printComponents();
         exit(-1);
     }
 
