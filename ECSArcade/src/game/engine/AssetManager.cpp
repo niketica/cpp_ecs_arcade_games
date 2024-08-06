@@ -1,6 +1,6 @@
 #include "AssetManager.h"
 
-void AssetManager::addFont(const std::string& name, const std::string& path)
+void AssetManager::addFont(const char* name, const char* path)
 {
     std::cout << "Loading font - " << name << " - " << path << std::endl;
 
@@ -12,12 +12,12 @@ void AssetManager::addFont(const std::string& name, const std::string& path)
     }
 }
 
-const sf::Font& AssetManager::getFont(const std::string& name) const
+const sf::Font& AssetManager::getFont(const char* name) const
 {
     return fontMap.at(name);
 }
 
-void AssetManager::addTexture(const std::string& name, const std::string& path)
+void AssetManager::addTexture(const char* name, const char* path)
 {
     std::cout << "Loading texture - " << name << " - " << path << std::endl;
 
@@ -38,17 +38,17 @@ void AssetManager::addTexture(const std::string& name, const std::string& path)
     spriteMap[name].setTexture(textureMap[name]);
 }
 
-const sf::Texture& AssetManager::getTexture(const std::string& name) const
+const sf::Texture& AssetManager::getTexture(const char* name) const
 {
     return textureMap.at(name);
 }
 
-const sf::Sprite& AssetManager::getSprite(const std::string& name) const
+const sf::Sprite& AssetManager::getSprite(const char* name) const
 {
     return spriteMap.at(name);
 }
 
-void AssetManager::applyAlphaMask(sf::Texture& texture, const sf::Color& alphaColor)
+void AssetManager::applyAlphaMask(sf::Texture& texture, const sf::Color& alphaColor) const
 {
     sf::Image image = texture.copyToImage();
     sf::Vector2u imageSize = image.getSize();

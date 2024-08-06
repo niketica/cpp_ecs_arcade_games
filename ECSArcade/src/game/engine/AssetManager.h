@@ -8,17 +8,17 @@
 class AssetManager
 {
 public:
-    void addFont(const std::string& name, const std::string& path);
-    void addTexture(const std::string& name, const std::string& path);
+    void addFont(const char* name, const char* path);
+    void addTexture(const char* name, const char* path);
 
-    const sf::Font& getFont(const std::string& name) const;
-    const sf::Texture& getTexture(const std::string& name) const;
-    const sf::Sprite& getSprite(const std::string& name) const;
+    const sf::Font& getFont(const char* name) const;
+    const sf::Texture& getTexture(const char* name) const;
+    const sf::Sprite& getSprite(const char* name) const;
 
 private:
-    std::map<std::string, sf::Font> fontMap;
-    std::map<std::string, sf::Texture> textureMap;
-    std::map<std::string, sf::Sprite> spriteMap;
+    std::map<const char*, sf::Font> fontMap;
+    std::map<const char*, sf::Texture> textureMap;
+    std::map<const char*, sf::Sprite> spriteMap;
 
-    void applyAlphaMask(sf::Texture& texture, const sf::Color& alphaColor);
+    void applyAlphaMask(sf::Texture& texture, const sf::Color& alphaColor) const;
 };
