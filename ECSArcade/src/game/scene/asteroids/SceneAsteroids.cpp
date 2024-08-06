@@ -1,9 +1,6 @@
 #include "SceneAsteroids.h"
 
-SceneAsteroids::SceneAsteroids(Game* game) : Scene(game) 
-{
-    init();
-}
+SceneAsteroids::SceneAsteroids(Game* game) : Scene(game) {}
 
 void SceneAsteroids::init()
 {

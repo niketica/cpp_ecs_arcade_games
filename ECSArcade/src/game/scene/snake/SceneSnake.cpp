@@ -1,9 +1,6 @@
 #include "SceneSnake.h"
 
-SceneSnake::SceneSnake(Game* game) : Scene(game)
-{
-    init();
-}
+SceneSnake::SceneSnake(Game* game) : Scene(game) {}
 
 void SceneSnake::init()
 {

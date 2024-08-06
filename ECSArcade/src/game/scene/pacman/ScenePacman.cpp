@@ -1,9 +1,6 @@
 #include "ScenePacman.h"
 
-ScenePacman::ScenePacman(Game* game) : Scene(game)
-{
-    init();
-}
+ScenePacman::ScenePacman(Game* game) : Scene(game) {}
 
 void ScenePacman::init()
 {

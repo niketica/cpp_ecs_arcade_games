@@ -12,8 +12,7 @@ void Game::init()
     window.create(sf::VideoMode(wWidth, wHeight), "ECS Arcade");
 
     loadAssets();
-
-    currentScene = std::make_shared<SceneTitleScreen>(this);
+    loadScene(std::make_shared<SceneTitleScreen>(this));
 }
 
 void Game::loadAssets()
@@ -189,6 +188,7 @@ int Game::getHeight() const
 void Game::loadScene(std::shared_ptr<Scene> scene)
 {
     currentScene = scene;
+    currentScene->init();
 }
 
 Entity Game::getEntityWithTag(int tag)

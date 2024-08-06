@@ -1,9 +1,6 @@
 #include "SceneTitleScreen.h"
 
-SceneTitleScreen::SceneTitleScreen(Game* game) : Scene(game) 
-{
-    init();
-}
+SceneTitleScreen::SceneTitleScreen(Game* game) : Scene(game) {}
 
 void SceneTitleScreen::init()
 {

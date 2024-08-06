@@ -1,9 +1,6 @@
 #include "SceneTetris.h"
 
-SceneTetris::SceneTetris(Game* game) : Scene(game)
-{
-    init();
-}
+SceneTetris::SceneTetris(Game* game) : Scene(game) {}
 
 void SceneTetris::init()
 {
