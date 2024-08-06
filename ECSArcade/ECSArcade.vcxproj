@@ -147,6 +147,7 @@
     <ClCompile Include="src\game\common\Vec2.cpp" />
     <ClCompile Include="src\game\engine\AssetManager.cpp" />
     <ClCompile Include="src\game\engine\Game.cpp" />
+    <ClCompile Include="src\game\scene\common\RandomNumberGenerator.cpp" />
     <ClCompile Include="src\game\scene\common\Scene.cpp" />
     <ClCompile Include="src\game\scene\asteroids\SceneAsteroids.cpp" />
     <ClCompile Include="src\game\scene\pacman\ScenePacman.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="src\game\common\Vec2.h" />
     <ClInclude Include="src\game\engine\AssetManager.h" />
     <ClInclude Include="src\game\engine\Game.h" />
+    <ClInclude Include="src\game\scene\common\RandomNumberGenerator.h" />
     <ClInclude Include="src\game\scene\common\Scene.h" />
     <ClInclude Include="src\game\scene\asteroids\SceneAsteroids.h" />
     <ClInclude Include="src\game\scene\pacman\ScenePacman.h" />

@@ -4,6 +4,7 @@
 #include <cmath>
 #include "../common/Scene.h"
 #include "../common/Animation.h"
+#include "../common/RandomNumberGenerator.h"
 #include "../../engine/Game.h"
 #include "../titlescreen/SceneTitleScreen.h"
 #include "../../common/Vec2.h"
@@ -61,6 +62,7 @@ private:
     const sf::Color windowClearColor = sf::Color(0, 0, 0);
     const float playerSpeedIncrement = 1.f;
     const float maxPlayerSpeed = 5.f;
+    const RandomNumberGenerator rand = {};
 
     int asteroidCount = 0;
     int asteroidMax = 20;

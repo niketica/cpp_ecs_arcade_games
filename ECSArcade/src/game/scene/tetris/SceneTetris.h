@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../common/Scene.h"
+#include "../common/RandomNumberGenerator.h"
 #include "../../engine/Game.h"
 #include "../../common/Vec2.h"
 #include "../titlescreen/SceneTitleScreen.h"
@@ -61,6 +62,8 @@ public:
 
 private:
     const sf::Color windowClearColor = sf::Color(0, 0, 0);
+
+    const RandomNumberGenerator rand = {};
 
     const static int columns = 10;
     const static int rows = 20;

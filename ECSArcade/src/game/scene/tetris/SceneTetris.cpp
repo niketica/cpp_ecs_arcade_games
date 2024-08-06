@@ -5,7 +5,6 @@ SceneTetris::SceneTetris(Game* game) : Scene(game) {}
 void SceneTetris::init()
 {
     getGame()->getECSManager().reset();
-    srand(time(NULL));
     createActionList();
     createNextTetromino();
     activateNextTetromino();
@@ -17,7 +16,7 @@ void SceneTetris::init()
 
 void SceneTetris::createNextTetromino()
 {
-    Tetromino tetromino = tetrominos[rand() % nrOfTetrominos];
+    Tetromino tetromino = tetrominos[rand.getRandomNumber(nrOfTetrominos - 1)];
     tetromino.topLeftPos = { (columns / 2) - ( shapeSize / 2), 0 };
     tetromino.active = false;
     tetromino.next = true;

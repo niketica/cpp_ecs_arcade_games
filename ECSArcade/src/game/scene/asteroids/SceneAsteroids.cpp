@@ -6,8 +6,6 @@ void SceneAsteroids::init()
 {
     getGame()->getECSManager().reset();
 
-    srand(time(NULL));
-
     createActionList();
     createPlayer();
     createBackground();
@@ -56,10 +54,10 @@ void SceneAsteroids::createAsteroid()
     int textureHeight = sprite.getTexture()->getSize().y;
 
     Transform transform;
-    if (rand() % 2)
+    if (rand.getRandomNumber(1) == 1)
     {
-        float xPos = rand() % getGame()->getWidth();
-        if (rand() % 2)
+        float xPos = rand.getRandomNumber(getGame()->getWidth());
+        if (rand.getRandomNumber(1) == 1)
         {
             transform.position = { xPos, textureHeight * -1.f };
         }
@@ -70,8 +68,8 @@ void SceneAsteroids::createAsteroid()
     }
     else
     {
-        float yPos = rand() % getGame()->getHeight();
-        if (rand() % 2)
+        float yPos = rand.getRandomNumber(getGame()->getHeight());
+        if (rand.getRandomNumber(1) == 1)
         {
             transform.position = { textureWidth * -1.f, yPos };
         }
@@ -81,9 +79,9 @@ void SceneAsteroids::createAsteroid()
         }
     }
 
-    transform.degrees = rand() % 270;
-    transform.speed = (rand() % 4) + 2.f;
-    transform.scale = ((rand() % 80) + 20) * .01f;
+    transform.degrees = rand.getRandomNumber(270);
+    transform.speed = rand.getRandomNumber(4) + 2.f;
+    transform.scale = (rand.getRandomNumber(80) + 20) * .01f;
 
     BoundingBox boundingBox;
     boundingBox.radius = (textureWidth / 2.f) - 12.f; // Minus some margin since not the entire texture is an asteroid.

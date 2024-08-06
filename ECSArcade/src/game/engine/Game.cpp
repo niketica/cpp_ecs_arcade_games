@@ -142,7 +142,7 @@ void Game::input()
 
             if (keyType != UNDEFINED_KEY)
             {
-                KeyInput keyInput;
+                KeyInput keyInput{};
                 keyInput.inputType = event.type == sf::Event::KeyPressed ? PRESSED : RELEASED;
                 keyInput.keyType = keyType;
                 Entity keyEvent = ecsManager.addEntity();
