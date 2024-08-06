@@ -14,7 +14,7 @@ void SceneTetris::init()
     activateNextTetromino();
 
     Entity eGameStatus = getGame()->getECSManager().addEntity();
-    getGame()->getECSManager().addComponent<EntityTag>(eGameStatus, TETRIS_STATUS);
+    getGame()->getECSManager().addComponent<EntityTag>(eGameStatus, EntityTag(TETRIS_STATUS));
     getGame()->getECSManager().addComponent<TetrisStatus>(eGameStatus, {});
 }
 

@@ -35,7 +35,6 @@ void Game::loadAssets()
 
 void Game::start()
 {
-    Entity e = ecsManager.addEntity();
     loop();
 }
 
@@ -92,7 +91,6 @@ void Game::loop()
 void Game::input()
 {
     auto inputs = ecsManager.getEntitiesWithComponent<KeyInput>();
-    // std::cout << "inputs size = " << inputs.size() << std::endl;
     for (auto prevInput : inputs)
     {
         ecsManager.removeEntity(prevInput);

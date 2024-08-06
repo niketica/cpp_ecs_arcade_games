@@ -36,8 +36,8 @@ struct KeyInput
 
 struct EntityTag
 {
-    EntityTag() {}
-    EntityTag(int value) : value(value) {}
+    EntityTag() = default;
+    explicit EntityTag(int value) : value(value) {}
 
     int value = -1;
 };

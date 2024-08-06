@@ -24,7 +24,6 @@ void AnimationController::updateAnimationIndex(Animation& animation)
         if (animation.index >= animation.totalFrames)
         {
             animation.finished = true;
-            return;
         }
     }
 }
