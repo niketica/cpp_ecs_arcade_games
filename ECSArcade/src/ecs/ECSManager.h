@@ -7,9 +7,10 @@
 class ECSManager : public EntityManager, public ComponentManager
 {
 public:
-    ECSManager(Entity maxNrOfEntities);
+    explicit ECSManager(Entity maxNrOfEntities);
+    virtual ~ECSManager() = default;
 
-    void removeEntity(Entity entity);
+    void removeEntity(Entity entity) override;
 
     void reset();
 };

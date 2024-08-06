@@ -7,15 +7,16 @@
 class EntityManager
 {
 public:
-    EntityManager(Entity maxNrOfEntities);
+    explicit EntityManager(Entity maxNrOfEntities);
+    virtual ~EntityManager() = default;
 
-    Entity& addEntity();
+    Entity addEntity();
     virtual void removeEntity(Entity entity) = 0;
 
-protected:
-    Entity maxNrOfEntities;
-    /* TODO add scale up / scale down effect of available entities */
-    std::queue<Entity> availableEntities;
-
     void resetEntityManager();
+    void makeEntityAvailable(Entity entity);
+
+private:
+    Entity maxNrOfEntities;
+    std::queue<Entity> availableEntities;
 };

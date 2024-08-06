@@ -44,7 +44,7 @@ public:
             }
         }
 
-        throw std::runtime_error("Entity does not have component: " + std::string(typeid(T).name()));
+        throw std::invalid_argument("Entity does not have component: " + std::string(typeid(T).name()));
     }
 
     template<typename T>
@@ -52,14 +52,14 @@ public:
     {
         auto entities = getEntitiesWithComponent<T>();
 
-        std::vector<std::shared_ptr<T>> components;
-        components.reserve(entities.size());
+        std::vector<std::shared_ptr<T>> componentsOfType;
+        componentsOfType.reserve(entities.size());
         for (Entity e : entities) {
             auto component = getComponent<T>(e);
-            components.push_back(component);
+            componentsOfType.push_back(component);
         }
 
-        return components;
+        return componentsOfType;
     }
 
     template<typename T>
@@ -85,11 +85,12 @@ public:
     {
         auto it = components.find(std::type_index(typeid(T)));
         if (it != components.end()) {
-            for (const auto& pair : it->second) {
-                return pair.first;
+            auto& componentsOfType = it->second;
+            if (!componentsOfType.empty()) {
+                return componentsOfType.begin()->first;
             }
         }
-        throw std::runtime_error("No entity found with component: " + std::string(typeid(T).name()));
+        throw std::invalid_argument("No entity found with component: " + std::string(typeid(T).name()));
     }
 
     template<typename T>

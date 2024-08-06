@@ -16,7 +16,7 @@ void EntityManager::resetEntityManager()
     std::swap(availableEntities, newEntityQueue);
 }
 
-Entity& EntityManager::addEntity()
+Entity EntityManager::addEntity()
 {
     if (availableEntities.empty())
     {
@@ -28,4 +28,9 @@ Entity& EntityManager::addEntity()
     availableEntities.pop();
 
     return e;
+}
+
+void EntityManager::makeEntityAvailable(Entity entity)
+{
+    availableEntities.push(entity);
 }

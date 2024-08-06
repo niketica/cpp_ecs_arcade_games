@@ -5,7 +5,7 @@ ECSManager::ECSManager(Entity maxNrOfEntities) : EntityManager(maxNrOfEntities) 
 void ECSManager::removeEntity(Entity entity)
 {
     removeComponentsForEntity(entity);
-    availableEntities.push(entity);
+    makeEntityAvailable(entity);
 }
 
 void ECSManager::reset()
