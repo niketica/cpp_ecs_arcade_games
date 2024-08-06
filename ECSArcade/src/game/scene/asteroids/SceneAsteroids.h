@@ -9,8 +9,6 @@
 #include "../titlescreen/SceneTitleScreen.h"
 #include "../../common/Vec2.h"
 
-#define M_PI 3.14159265358979323846
-
 struct Transform
 {
     Vec2 position;
@@ -25,7 +23,7 @@ struct BoundingBox
     float radius = 0.f;
 };
 
-enum AsteroidTag
+enum class AsteroidTag
 {
     UNDEFINED_ENTITY,
     PLAYER,
@@ -35,7 +33,7 @@ enum AsteroidTag
     LASER
 };
 
-enum AsteroidsAction
+enum class AsteroidsAction
 {
     THROTTLE,
     ROTATE_LEFT,
@@ -59,6 +57,7 @@ public:
     void render(sf::RenderWindow& window);
 
 private:
+    const double M_PI = 3.14159265358979323846;
     const sf::Color windowClearColor = sf::Color(0, 0, 0);
     const float playerSpeedIncrement = 1.f;
     const float maxPlayerSpeed = 5.f;
@@ -89,4 +88,7 @@ private:
     void updateLaser(Entity laser);
     void detectPlayerCollision();
     void detectLaserCollision(Entity laser);
+
+    Entity getEntityWithTag(AsteroidTag tag);
+    std::vector<Entity> getEntitiesWithTag(AsteroidTag tag);
 };
