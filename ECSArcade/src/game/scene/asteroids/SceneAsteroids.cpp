@@ -22,8 +22,8 @@ void SceneAsteroids::createPlayer()
     sprite = getGame()->getAssetManager().getSprite("space_ship");
 
     auto playerSize = sprite.getTexture()->getSize();
-    auto xPos = getGame()->getWidth() / 2.f - playerSize.x / 2.f;
-    auto yPos = getGame()->getHeight() / 2.f - playerSize.y / 2.f;
+    auto xPos = (float) getGame()->getWidth() / 2.f - (float) playerSize.x / 2.f;
+    auto yPos = (float) getGame()->getHeight() / 2.f - (float) playerSize.y / 2.f;
 
     Transform transform;
     transform.position = { xPos, yPos };
@@ -51,10 +51,10 @@ void SceneAsteroids::createAsteroid()
     Transform transform;
     if (rand.getRandomNumber(1) == 1)
     {
-        float xPos = rand.getRandomNumber(getGame()->getWidth());
+        auto xPos = (float) rand.getRandomNumber(getGame()->getWidth());
         if (rand.getRandomNumber(1) == 1)
         {
-            transform.position = { xPos, textureHeight * -1.f };
+            transform.position = { xPos, (float) textureHeight * -1.f };
         }
         else
         {
@@ -63,10 +63,10 @@ void SceneAsteroids::createAsteroid()
     }
     else
     {
-        float yPos = rand.getRandomNumber(getGame()->getHeight());
+        auto yPos = (float) rand.getRandomNumber(getGame()->getHeight());
         if (rand.getRandomNumber(1) == 1)
         {
-            transform.position = { textureWidth * -1.f, yPos };
+            transform.position = { (float) textureWidth * -1.f, yPos };
         }
         else
         {
@@ -74,12 +74,12 @@ void SceneAsteroids::createAsteroid()
         }
     }
 
-    transform.degrees = rand.getRandomNumber(270);
-    transform.speed = rand.getRandomNumber(4) + 2.f;
-    transform.scale = (rand.getRandomNumber(80) + 20) * .01f;
+    transform.degrees = (float) rand.getRandomNumber(270);
+    transform.speed = (float) rand.getRandomNumber(4) + 2.f;
+    transform.scale = ((float) rand.getRandomNumber(80) + 20.f) * .01f;
 
     BoundingBox boundingBox;
-    boundingBox.radius = (textureWidth / 2.f) - 12.f; // Minus some margin since not the entire texture is an asteroid.
+    boundingBox.radius = ((float) textureWidth / 2.f) - 12.f; // Minus some margin since not the entire texture is an asteroid.
 
     Entity entity = getGame()->getECSManager().addEntity();
     getGame()->getECSManager().addComponent<AsteroidTag>(entity, AsteroidTag::ASTEROID);
@@ -209,73 +209,90 @@ void SceneAsteroids::createActionList()
 
 void SceneAsteroids::input()
 {
-    auto keyInputs = getGame()->getECSManager().getComponents<KeyInput>();
+    const auto keyInputs = getGame()->getECSManager().getComponents<KeyInput>();
     for (auto& keyInput : keyInputs)
     {
         if (keyInput->inputType == PRESSED)
         {
-            auto actionList = getGame()->getECSManager().getAnyComponent<std::vector<AsteroidsAction>>();
-            if (keyInput->keyType == W)
-            {
-                if (! (std::find(actionList->begin(), actionList->end(), AsteroidsAction::THROTTLE) != actionList->end()))
-                {
-                    actionList->push_back(AsteroidsAction::THROTTLE);
-                }
-            }
-            else if (keyInput->keyType == A)
-            {
-                if (!(std::find(actionList->begin(), actionList->end(), AsteroidsAction::ROTATE_LEFT) != actionList->end()))
-                {
-                    actionList->push_back(AsteroidsAction::ROTATE_LEFT);
-                }
-            }
-            else if (keyInput->keyType == D)
-            {
-                if (!(std::find(actionList->begin(), actionList->end(), AsteroidsAction::ROTATE_RIGHT) != actionList->end()))
-                {
-                    actionList->push_back(AsteroidsAction::ROTATE_RIGHT);
-                }
-            }
-            else if (keyInput->keyType == C)
-            {
-                drawCollision = !drawCollision;
-            }
-            else if (keyInput->keyType == T)
-            {
-                drawTextures = !drawTextures;
-            }
-            else if (keyInput->keyType == R)
-            {
-                init();
-            }
-            else if (keyInput->keyType == SPACE_KEY)
-            {
-                createLaser();
-            }
-            else if (keyInput->keyType == ESCAPE_KEY)
-            {
-                std::shared_ptr<Scene> scene = std::make_shared<SceneTitleScreen>(getGame());
-                getGame()->loadScene(scene);
-                return;
-            }
+            processKeyPressed(keyInput->keyType);
         }
         else if (keyInput->inputType == RELEASED)
         {
-            auto actionList = getGame()->getECSManager().getAnyComponent<std::vector<AsteroidsAction>>();
-            if (keyInput->keyType == W)
-            {
-                actionList->erase(std::remove(actionList->begin(), actionList->end(), AsteroidsAction::THROTTLE), actionList->end());
-            }
-            if (keyInput->keyType == A)
-            {
-                actionList->erase(std::remove(actionList->begin(), actionList->end(), AsteroidsAction::ROTATE_LEFT), actionList->end());
-            }
-            if (keyInput->keyType == D)
-            {
-                actionList->erase(std::remove(actionList->begin(), actionList->end(), AsteroidsAction::ROTATE_RIGHT), actionList->end());
-            }
+            processKeyReleased(keyInput->keyType);
         }
     }
+}
+
+void SceneAsteroids::processKeyPressed(const int key)
+{
+    auto actionList = getGame()->getECSManager().getAnyComponent<std::vector<AsteroidsAction>>();
+    switch (key)
+    {
+    case W:
+        if (!isActionPresent(*actionList, AsteroidsAction::THROTTLE))
+        {
+            actionList->push_back(AsteroidsAction::THROTTLE);
+        }
+        break;
+    case A:
+        if (!isActionPresent(*actionList, AsteroidsAction::ROTATE_LEFT))
+        {
+            actionList->push_back(AsteroidsAction::ROTATE_LEFT);
+        }
+        break;
+    case D:
+        if (!isActionPresent(*actionList, AsteroidsAction::ROTATE_RIGHT))
+        {
+            actionList->push_back(AsteroidsAction::ROTATE_RIGHT);
+        }
+        break;
+    case C:
+        drawCollision = !drawCollision;
+        break;
+    case T:
+        drawTextures = !drawTextures;
+        break;
+    case R:
+        init();
+        break;
+    case SPACE_KEY:
+        createLaser();
+        break;
+    case ESCAPE_KEY:
+        getGame()->loadScene(std::make_shared<SceneTitleScreen>(getGame()));
+        break;
+    default:
+        break;
+    }
+}
+
+void SceneAsteroids::processKeyReleased(const int key)
+{
+    auto actionList = getGame()->getECSManager().getAnyComponent<std::vector<AsteroidsAction>>();
+    switch (key)
+    {
+    case W:
+        removeAction(*actionList, AsteroidsAction::THROTTLE);
+        break;
+    case A:
+        removeAction(*actionList, AsteroidsAction::ROTATE_LEFT);
+        break;
+    case D:
+        removeAction(*actionList, AsteroidsAction::ROTATE_RIGHT);
+        break;
+    default:
+        break;
+    }
+}
+
+bool SceneAsteroids::isActionPresent(std::vector<AsteroidsAction>& actionList, AsteroidsAction action) const
+{
+    return std::find(actionList.begin(), actionList.end(), action) != actionList.end();
+}
+
+void SceneAsteroids::removeAction(std::vector<AsteroidsAction>& actionList, AsteroidsAction action) const
+{
+    actionList.erase(std::remove(actionList.begin(), actionList.end(), action), actionList.end());
 }
 
 void SceneAsteroids::update(float deltaTime)
@@ -371,9 +388,8 @@ void SceneAsteroids::updateAsteroid(Entity asteroid)
     updatePosition(*transform, 1.f);
 
     int textureWidth = sprite->getTexture()->getSize().x;
-    int textureHeight = sprite->getTexture()->getSize().y;
     int borderMargin = textureWidth * 2;
-    auto& position = transform->position;
+    const auto& position = transform->position;
     if (position.x < -borderMargin || position.x > getGame()->getWidth() + borderMargin ||
         position.y < -borderMargin || position.y > getGame()->getHeight() + borderMargin)
     {
@@ -394,9 +410,8 @@ void SceneAsteroids::updateLaser(Entity laser)
     updatePosition(*transform, transform->speed);
 
     int textureWidth = sprite->getTexture()->getSize().x;
-    int textureHeight = sprite->getTexture()->getSize().y;
     int borderMargin = textureWidth * 2;
-    auto& position = transform->position;
+    const auto& position = transform->position;
     if (position.x < -borderMargin || position.x > getGame()->getWidth() + borderMargin ||
         position.y < -borderMargin || position.y > getGame()->getHeight() + borderMargin)
     {
@@ -407,47 +422,52 @@ void SceneAsteroids::updateLaser(Entity laser)
 void SceneAsteroids::processActionList(Transform& transform)
 {
     auto actionList = getGame()->getECSManager().getAnyComponent<std::vector<AsteroidsAction>>();
-
-    float rotationSpeed = 6.f;
-
-    for (auto& action : *actionList)
+    for (const auto& action : *actionList)
     {
-        switch (action)
-        {
-        case AsteroidsAction::THROTTLE:
-            {
-                if (transform.speed < maxPlayerSpeed)
-                {
-                    transform.speed += playerSpeedIncrement;
-                    if (transform.speed > maxPlayerSpeed) transform.speed = maxPlayerSpeed;
-                }
-                break;
-            }
-            case AsteroidsAction::ROTATE_LEFT:
-            {
-                transform.degrees -= rotationSpeed;
-                if (transform.degrees < 0)
-                {
-                    transform.degrees = 360 - transform.degrees;
-                }
-                break;
-            }
-            case AsteroidsAction::ROTATE_RIGHT:
-            {
-                transform.degrees += rotationSpeed;
-                if (transform.degrees > 360)
-                {
-                    transform.degrees = transform.degrees - 360;
-                }
-                break;
-            }
-        }
+        processAction(action, transform);
     }
 }
 
-void SceneAsteroids::updatePosition(Transform& transform, float deltaTime) {
-    float radians = transform.degrees * (M_PI / 180.0f);
+void SceneAsteroids::processAction(AsteroidsAction action, Transform& transform) const
+{
+    float rotationSpeed = 6.f;
 
+    switch (action)
+    {
+    case AsteroidsAction::THROTTLE:
+    {
+        if (transform.speed < maxPlayerSpeed)
+        {
+            transform.speed += playerSpeedIncrement;
+            if (transform.speed > maxPlayerSpeed) transform.speed = maxPlayerSpeed;
+        }
+        break;
+    }
+    case AsteroidsAction::ROTATE_LEFT:
+    {
+        transform.degrees -= rotationSpeed;
+        if (transform.degrees < 0)
+        {
+            transform.degrees = 360 - transform.degrees;
+        }
+        break;
+    }
+    case AsteroidsAction::ROTATE_RIGHT:
+    {
+        transform.degrees += rotationSpeed;
+        if (transform.degrees > 360)
+        {
+            transform.degrees = transform.degrees - 360;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+void SceneAsteroids::updatePosition(Transform& transform, float deltaTime) const {
+    float radians = transform.degrees * ((float) M_PI / 180.0f);
     transform.velocity.x = std::cos(radians) * transform.speed;
     transform.velocity.y = std::sin(radians) * transform.speed;
     transform.position = transform.position + (transform.velocity * deltaTime);
@@ -466,7 +486,7 @@ void SceneAsteroids::detectPlayerCollision()
         auto asteroidBoundingBox = getGame()->getECSManager().getComponent<BoundingBox>(asteroid);
 
         Vec2 deltaV = playerTransform->position - asteroidTransform->position;
-        float length = deltaV.length();
+        auto length = (float) deltaV.length();
 
         if (length <= playerBoundingBox->radius || length <= asteroidBoundingBox->radius)
         {
@@ -489,7 +509,7 @@ void SceneAsteroids::detectLaserCollision(Entity laser)
         auto asteroidBoundingBox = getGame()->getECSManager().getComponent<BoundingBox>(asteroid);
 
         Vec2 deltaV = laserTransform->position - asteroidTransform->position;
-        float length = deltaV.length();
+        auto length = (float) deltaV.length();
 
         if (length <= laserBoundingBox->radius || length <= asteroidBoundingBox->radius)
         {
@@ -503,73 +523,32 @@ void SceneAsteroids::detectLaserCollision(Entity laser)
     }
 }
 
-void SceneAsteroids::render(sf::RenderWindow& window)
+void SceneAsteroids::renderBackground(sf::RenderWindow& window, Entity entity)
 {
-    window.clear(windowClearColor);
+    if (!drawTextures) return;
 
-    auto entities = getGame()->getECSManager().getEntitiesWithComponent<AsteroidTag>();
-
-    for (auto& entity : entities)
+    auto tag = getGame()->getECSManager().getComponent<AsteroidTag>(entity);
+    if (*tag == AsteroidTag::ASTEROIDS_BACKGROUND)
     {
-        auto tag = getGame()->getECSManager().getComponent<AsteroidTag>(entity);
-        if (*tag == AsteroidTag::ASTEROIDS_BACKGROUND)
-        {
-            if (drawTextures)
-            {
-                auto sprite = getGame()->getECSManager().getComponent<sf::Sprite>(entity);
-                window.draw(*sprite);
-            }
-        }
+        auto sprite = getGame()->getECSManager().getComponent<sf::Sprite>(entity);
+        window.draw(*sprite);
     }
+}
 
-    for (auto& entity : entities)
+void SceneAsteroids::renderAsteroid(sf::RenderWindow& window, Entity entity)
+{
+    auto tag = getGame()->getECSManager().getComponent<AsteroidTag>(entity);
+    if (*tag == AsteroidTag::ASTEROID)
     {
-        auto tag = getGame()->getECSManager().getComponent<AsteroidTag>(entity);
-        if (*tag == AsteroidTag::ASTEROID)
-        {
-            auto transform = getGame()->getECSManager().getComponent<Transform>(entity);
+        auto transform = getGame()->getECSManager().getComponent<Transform>(entity);
 
-            if (drawTextures)
-            {
-                auto sprite = getGame()->getECSManager().getComponent<sf::Sprite>(entity);
-
-                sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
-                sprite->setOrigin(size.x / 2.f, size.y / 2.f);
-                sprite->setPosition(transform->position.x, transform->position.y);
-                sprite->setScale(transform->scale, transform->scale);
-
-                window.draw(*sprite);
-            }
-
-            if (drawCollision)
-            {
-                auto boundingBox = getGame()->getECSManager().getComponent<BoundingBox>(entity);
-
-                sf::CircleShape boundingCircle(boundingBox->radius);
-                boundingCircle.setFillColor(sf::Color(0, 0, 0, 0));
-                boundingCircle.setOutlineThickness(1);
-                boundingCircle.setOutlineColor(sf::Color(250, 0, 0));
-                boundingCircle.setOrigin(boundingBox->radius, boundingBox->radius);
-                boundingCircle.setPosition(transform->position.x, transform->position.y);
-                boundingCircle.setScale(transform->scale, transform->scale);
-
-                window.draw(boundingCircle);
-            }
-        }
-    }
-
-    auto lasers = getEntitiesWithTag(AsteroidTag::LASER);
-    for (auto laser : lasers)
-    {
-        auto transform = getGame()->getECSManager().getComponent<Transform>(laser);
         if (drawTextures)
         {
-            auto sprite = getGame()->getECSManager().getComponent<sf::Sprite>(laser);
+            auto sprite = getGame()->getECSManager().getComponent<sf::Sprite>(entity);
 
-            sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
-            sprite->setOrigin(size.x / 2.0f, size.y / 2.0f);
-            sprite->setPosition(transform->position.x, transform->position.y);
-            sprite->setRotation(transform->degrees - 90.f);
+            auto size = (sf::Vector2f)sprite->getTexture()->getSize();
+            sprite->setOrigin(size.x / 2.f, size.y / 2.f);
+            sprite->setPosition((float) transform->position.x, (float) transform->position.y);
             sprite->setScale(transform->scale, transform->scale);
 
             window.draw(*sprite);
@@ -577,77 +556,138 @@ void SceneAsteroids::render(sf::RenderWindow& window)
 
         if (drawCollision)
         {
-            auto boundingBox = getGame()->getECSManager().getComponent<BoundingBox>(laser);
+            auto boundingBox = getGame()->getECSManager().getComponent<BoundingBox>(entity);
 
             sf::CircleShape boundingCircle(boundingBox->radius);
             boundingCircle.setFillColor(sf::Color(0, 0, 0, 0));
             boundingCircle.setOutlineThickness(1);
-            boundingCircle.setOutlineColor(sf::Color(0, 250, 250));
+            boundingCircle.setOutlineColor(sf::Color(250, 0, 0));
             boundingCircle.setOrigin(boundingBox->radius, boundingBox->radius);
-            boundingCircle.setPosition(transform->position.x, transform->position.y);
+            boundingCircle.setPosition((float) transform->position.x, (float) transform->position.y);
             boundingCircle.setScale(transform->scale, transform->scale);
 
             window.draw(boundingCircle);
         }
     }
+}
+
+void SceneAsteroids::renderLaser(sf::RenderWindow& window, Entity entity)
+{
+    auto transform = getGame()->getECSManager().getComponent<Transform>(entity);
+    if (drawTextures)
+    {
+        auto sprite = getGame()->getECSManager().getComponent<sf::Sprite>(entity);
+
+        auto size = (sf::Vector2f)sprite->getTexture()->getSize();
+        sprite->setOrigin(size.x / 2.0f, size.y / 2.0f);
+        sprite->setPosition((float)transform->position.x, (float)transform->position.y);
+        sprite->setRotation(transform->degrees - 90.f);
+        sprite->setScale(transform->scale, transform->scale);
+
+        window.draw(*sprite);
+    }
+
+    if (drawCollision)
+    {
+        auto boundingBox = getGame()->getECSManager().getComponent<BoundingBox>(entity);
+
+        sf::CircleShape boundingCircle(boundingBox->radius);
+        boundingCircle.setFillColor(sf::Color(0, 0, 0, 0));
+        boundingCircle.setOutlineThickness(1);
+        boundingCircle.setOutlineColor(sf::Color(0, 250, 250));
+        boundingCircle.setOrigin(boundingBox->radius, boundingBox->radius);
+        boundingCircle.setPosition((float)transform->position.x, (float)transform->position.y);
+        boundingCircle.setScale(transform->scale, transform->scale);
+
+        window.draw(boundingCircle);
+    }
+}
+
+void SceneAsteroids::renderExplosion(sf::RenderWindow& window, Entity entity)
+{
+    if (!drawTextures) return;
+
+    auto explTransform = getGame()->getECSManager().getComponent<Transform>(entity);
+    auto explosionAnimation = getGame()->getECSManager().getComponent<Animation>(entity);
+
+    explosionAnimation->sprite->setOrigin((float)explosionAnimation->width / 2.0f, (float)explosionAnimation->height / 2.0f);
+    explosionAnimation->sprite->setPosition((float)explTransform->position.x, (float)explTransform->position.y);
+    explosionAnimation->sprite->setRotation(explTransform->degrees);
+    explosionAnimation->sprite->setScale(explTransform->scale, explTransform->scale);
+
+    if (explosionAnimation->finished)
+    {
+        getGame()->getECSManager().removeEntity(entity);
+    }
+    else
+    {
+        window.draw(*explosionAnimation->sprite);
+    }
+}
+
+void SceneAsteroids::renderPlayer(sf::RenderWindow& window, Entity entity)
+{
+    auto playerTransform = getGame()->getECSManager().getComponent<Transform>(entity);
+
+    if (drawTextures)
+    {
+        auto sprite = getGame()->getECSManager().getComponent<sf::Sprite>(entity);
+
+        auto size = (sf::Vector2f)sprite->getTexture()->getSize();
+        sprite->setOrigin(size.x / 2.0f, size.y / 2.0f);
+        sprite->setPosition((float) playerTransform->position.x, (float) playerTransform->position.y);
+        sprite->setRotation(playerTransform->degrees - 90.f);
+        sprite->setScale(playerTransform->scale, playerTransform->scale);
+
+        window.draw(*sprite);
+    }
+
+    if (drawCollision)
+    {
+        auto boundingBox = getGame()->getECSManager().getComponent<BoundingBox>(entity);
+
+        sf::CircleShape boundingCircle(boundingBox->radius);
+        boundingCircle.setFillColor(sf::Color(0, 0, 0, 0));
+        boundingCircle.setOutlineThickness(1);
+        boundingCircle.setOutlineColor(sf::Color(100, 250, 50));
+        boundingCircle.setOrigin(boundingBox->radius, boundingBox->radius);
+        boundingCircle.setPosition((float) playerTransform->position.x, (float) playerTransform->position.y);
+        boundingCircle.setScale(playerTransform->scale, playerTransform->scale);
+
+        window.draw(boundingCircle);
+    }
+}
+
+void SceneAsteroids::render(sf::RenderWindow& window)
+{
+    window.clear(windowClearColor);
+
+    auto background = getEntityWithTag(AsteroidTag::ASTEROIDS_BACKGROUND);
+    renderBackground(window, background);
+
+    auto asteroids = getEntitiesWithTag(AsteroidTag::ASTEROID);
+    for (const auto& asteroid : asteroids)
+    {
+        renderAsteroid(window, asteroid);
+    }
+
+    auto lasers = getEntitiesWithTag(AsteroidTag::LASER);
+    for (auto laser : lasers)
+    {
+        renderLaser(window, laser);
+    }
 
     auto explosions = getEntitiesWithTag(AsteroidTag::EXPLOSION);
     for (auto explosion : explosions)
     {
-        if (drawTextures)
-        {
-            auto explTransform = getGame()->getECSManager().getComponent<Transform>(explosion);
-            auto explosionAnimation = getGame()->getECSManager().getComponent<Animation>(explosion);
-
-            explosionAnimation->sprite->setOrigin(explosionAnimation->width / 2.0f, explosionAnimation->height / 2.0f);
-            explosionAnimation->sprite->setPosition(explTransform->position.x, explTransform->position.y);
-            explosionAnimation->sprite->setRotation(explTransform->degrees);
-            explosionAnimation->sprite->setScale(explTransform->scale, explTransform->scale);
-
-            if (explosionAnimation->finished)
-            {
-                getGame()->getECSManager().removeEntity(explosion);
-            }
-            else
-            {
-                window.draw(*explosionAnimation->sprite);
-            }
-        }
+        renderExplosion(window, explosion);
     }
 
     auto player = getEntityWithTag(AsteroidTag::PLAYER);
     auto playerStats = getGame()->getECSManager().getComponent<PlayerStats>(player);
     if (playerStats->alive)
     {
-        auto playerTransform = getGame()->getECSManager().getComponent<Transform>(player);
-
-        if (drawTextures)
-        {
-            auto sprite = getGame()->getECSManager().getComponent<sf::Sprite>(player);
-
-            sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
-            sprite->setOrigin(size.x / 2.0f, size.y / 2.0f);
-            sprite->setPosition(playerTransform->position.x, playerTransform->position.y);
-            sprite->setRotation(playerTransform->degrees - 90.f);
-            sprite->setScale(playerTransform->scale, playerTransform->scale);
-
-            window.draw(*sprite);
-        }
-
-        if (drawCollision)
-        {
-            auto boundingBox = getGame()->getECSManager().getComponent<BoundingBox>(player);
-
-            sf::CircleShape boundingCircle(boundingBox->radius);
-            boundingCircle.setFillColor(sf::Color(0, 0, 0, 0));
-            boundingCircle.setOutlineThickness(1);
-            boundingCircle.setOutlineColor(sf::Color(100, 250, 50));
-            boundingCircle.setOrigin(boundingBox->radius, boundingBox->radius);
-            boundingCircle.setPosition(playerTransform->position.x, playerTransform->position.y);
-            boundingCircle.setScale(playerTransform->scale, playerTransform->scale);
-
-            window.draw(boundingCircle);
-        }
+        renderPlayer(window, player);
     }
 
     window.display();

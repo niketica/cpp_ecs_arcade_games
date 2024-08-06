@@ -49,12 +49,12 @@ struct PlayerStats
 class SceneAsteroids : public Scene
 {
 public:
-    SceneAsteroids(Game* game);
+    explicit SceneAsteroids(Game* game);
 
-    void init();
-    void input();
-    void update(float deltaTime);
-    void render(sf::RenderWindow& window);
+    void init() override;
+    void input() override;
+    void update(float deltaTime) override;
+    void render(sf::RenderWindow& window) override;
 
 private:
     const double M_PI = 3.14159265358979323846;
@@ -82,13 +82,25 @@ private:
     void createLaser();
 
     void processActionList(Transform& transform);
-    void updatePosition(Transform& transform, float deltaTime);
+    void processAction(AsteroidsAction action, Transform& transform) const;
+    void updatePosition(Transform& transform, float deltaTime) const;
     void updatePlayer();
     void updateAsteroid(Entity asteroid);
     void updateLaser(Entity laser);
     void detectPlayerCollision();
     void detectLaserCollision(Entity laser);
 
+    void processKeyPressed(const int key);
+    void processKeyReleased(const int key);
+    bool isActionPresent(std::vector<AsteroidsAction>& actionList, AsteroidsAction action) const;
+    void removeAction(std::vector<AsteroidsAction>& actionList, AsteroidsAction action) const;
+
     Entity getEntityWithTag(AsteroidTag tag);
     std::vector<Entity> getEntitiesWithTag(AsteroidTag tag);
+
+    void renderBackground(sf::RenderWindow& window, Entity entity);
+    void renderAsteroid(sf::RenderWindow& window, Entity entity);
+    void renderLaser(sf::RenderWindow& window, Entity entity);
+    void renderExplosion(sf::RenderWindow& window, Entity entity);
+    void renderPlayer(sf::RenderWindow& window, Entity entity);
 };
