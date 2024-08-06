@@ -7,7 +7,7 @@ SceneTitleScreen::SceneTitleScreen(Game* game) : Scene(game)
 
 void SceneTitleScreen::init()
 {
-    game->getECSManager().reset();
+    getGame()->getECSManager().reset();
     createTitle();
     createMenuItems();
     createBackground();
@@ -15,10 +15,10 @@ void SceneTitleScreen::init()
 
 void SceneTitleScreen::createTitle()
 {
-    auto& openSans = game->getAssetManager().getFont("OpenSans");
+    auto& openSans = getGame()->getAssetManager().getFont("OpenSans");
     sf::Text titleText("ECS Arcade", openSans, 48);
 
-    auto xPos = (game->getWidth() / 2) - (titleText.getLocalBounds().width / 2);
+    auto xPos = (getGame()->getWidth() / 2) - (titleText.getLocalBounds().width / 2);
     auto yPos = 0.f;
     titleText.setPosition(xPos, yPos);
     titleText.setStyle(sf::Text::Bold);
@@ -26,13 +26,13 @@ void SceneTitleScreen::createTitle()
 
     Title title;
     title.text = titleText;
-    Entity eTitleText = game->getECSManager().addEntity();
-    game->getECSManager().addComponent<Title>(eTitleText, title);
+    Entity eTitleText = getGame()->getECSManager().addEntity();
+    getGame()->getECSManager().addComponent<Title>(eTitleText, title);
 }
 
 void SceneTitleScreen::createMenuItems()
 {
-    auto& openSans = game->getAssetManager().getFont("OpenSans");
+    auto& openSans = getGame()->getAssetManager().getFont("OpenSans");
     std::vector<std::string> menuOptions;
     menuOptions.push_back("ASTEROIDS");
     menuOptions.push_back("SNAKE");
@@ -47,12 +47,12 @@ void SceneTitleScreen::createMenuItems()
         std::string strMenuOption = menuOptions.at(index);
         sf::Text menuOption(strMenuOption, openSans, 30);
 
-        auto xPos = (game->getWidth() / 2) - (menuOption.getLocalBounds().width / 2);
+        auto xPos = (getGame()->getWidth() / 2) - (menuOption.getLocalBounds().width / 2);
         auto yPos = 100.f + verticalSpacing;
         menuOption.setPosition(xPos, yPos);
         menuOption.setStyle(sf::Text::Bold);
 
-        Entity eMenuOption = game->getECSManager().addEntity();
+        Entity eMenuOption = getGame()->getECSManager().addEntity();
 
         MenuItem menuItem;
         menuItem.index = index;
@@ -68,7 +68,7 @@ void SceneTitleScreen::createMenuItems()
             menuItem.text.setFillColor(inactiveMenuItemColor);
         }
 
-        game->getECSManager().addComponent<MenuItem>(eMenuOption, menuItem);
+        getGame()->getECSManager().addComponent<MenuItem>(eMenuOption, menuItem);
 
         verticalSpacing += menuOption.getCharacterSize();
     }
@@ -80,17 +80,17 @@ void SceneTitleScreen::createBackground()
     backgroundTag.value = TITLE_BACKGROUND;
 
     sf::Sprite backgroundSprite;
-    backgroundSprite = game->getAssetManager().getSprite("title_background");
+    backgroundSprite = getGame()->getAssetManager().getSprite("title_background");
     backgroundSprite.setScale(0.5f, 0.5f);
 
-    Entity eBackground = game->getECSManager().addEntity();
-    game->getECSManager().addComponent<EntityTag>(eBackground, backgroundTag);
-    game->getECSManager().addComponent<sf::Sprite>(eBackground, backgroundSprite);
+    Entity eBackground = getGame()->getECSManager().addEntity();
+    getGame()->getECSManager().addComponent<EntityTag>(eBackground, backgroundTag);
+    getGame()->getECSManager().addComponent<sf::Sprite>(eBackground, backgroundSprite);
 }
 
 void SceneTitleScreen::input()
 {
-    auto keyInputs = game->getECSManager().getComponents<KeyInput>();
+    auto keyInputs = getGame()->getECSManager().getComponents<KeyInput>();
     for (auto& keyInput : keyInputs)
     {
         if (keyInput->inputType == PRESSED)
@@ -107,33 +107,33 @@ void SceneTitleScreen::input()
             }
             else if (keyInput->keyType == D)
             {
-                auto menuItems = game->getECSManager().getComponents<MenuItem>();
+                auto menuItems = getGame()->getECSManager().getComponents<MenuItem>();
                 for (auto& menuItem : menuItems)
                 {
                     if (!menuItem->active) continue;
                     switch (menuItem->index)
                     {
                     case 0:
-                        game->loadScene(std::make_shared<SceneAsteroids>(game));
+                        getGame()->loadScene(std::make_shared<SceneAsteroids>(getGame()));
                         break;
                     case 1:
-                        game->loadScene(std::make_shared<SceneSnake>(game));
+                        getGame()->loadScene(std::make_shared<SceneSnake>(getGame()));
                         break;
                     case 2:
-                        game->loadScene(std::make_shared<SceneTetris>(game));
+                        getGame()->loadScene(std::make_shared<SceneTetris>(getGame()));
                         break;
                     case 3:
-                        game->loadScene(std::make_shared<ScenePacman>(game));
+                        getGame()->loadScene(std::make_shared<ScenePacman>(getGame()));
                         break;
                     case 4:
-                        game->stop();
+                        getGame()->stop();
                         break;
                     }
                 }
             }
             else if (keyInput->keyType == ESCAPE_KEY)
             {
-                game->stop();
+                getGame()->stop();
             }
         }
         else if (keyInput->inputType == RELEASED)
@@ -152,7 +152,7 @@ void SceneTitleScreen::update(float deltaTime)
 
 int SceneTitleScreen::getNextActiveMenuItemIndex()
 {
-    auto menuItems = game->getECSManager().getComponents<MenuItem>();
+    auto menuItems = getGame()->getECSManager().getComponents<MenuItem>();
     int activeIndex = -1;
     for (auto& menuItem : menuItems)
     {
@@ -171,7 +171,7 @@ int SceneTitleScreen::getNextActiveMenuItemIndex()
 
 int SceneTitleScreen::getPreviousActiveMenuItemIndex()
 {
-    auto menuItems = game->getECSManager().getComponents<MenuItem>();
+    auto menuItems = getGame()->getECSManager().getComponents<MenuItem>();
     size_t activeIndex = 0;
     for (auto& menuItem : menuItems)
     {
@@ -193,7 +193,7 @@ int SceneTitleScreen::getPreviousActiveMenuItemIndex()
 
 void SceneTitleScreen::updateMenuItems(int activeIndex)
 {
-    auto menuItems = game->getECSManager().getComponents<MenuItem>();
+    auto menuItems = getGame()->getECSManager().getComponents<MenuItem>();
     for (int index = 0; index < menuItems.size(); index++)
     {
         auto& menuItem = menuItems.at(index);
@@ -214,24 +214,24 @@ void SceneTitleScreen::render(sf::RenderWindow& window)
 {
     window.clear(windowClearColor);
 
-    auto entities = game->getECSManager().getEntitiesWithComponent<EntityTag>();
+    auto entities = getGame()->getECSManager().getEntitiesWithComponent<EntityTag>();
     for (auto& entity : entities)
     {
-        auto tag = game->getECSManager().getComponent<EntityTag>(entity);
+        auto tag = getGame()->getECSManager().getComponent<EntityTag>(entity);
         if (tag->value == TITLE_BACKGROUND)
         {
-            auto sprite = game->getECSManager().getComponent<sf::Sprite>(entity);
+            auto sprite = getGame()->getECSManager().getComponent<sf::Sprite>(entity);
             window.draw(*sprite);
         }
     }
 
-    auto menuItems = game->getECSManager().getComponents<MenuItem>();
+    auto menuItems = getGame()->getECSManager().getComponents<MenuItem>();
     for (auto& menuItem : menuItems)
     {
         window.draw(menuItem->text);
     }
     
-    auto titles = game->getECSManager().getComponents<Title>();
+    auto titles = getGame()->getECSManager().getComponents<Title>();
     for (auto& title : titles)
     {
         window.draw(title->text);

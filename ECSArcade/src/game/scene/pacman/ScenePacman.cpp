@@ -12,27 +12,27 @@ void ScenePacman::init()
 
 void ScenePacman::createActionList()
 {
-    Entity eAction = game->getECSManager().addEntity();
+    Entity eAction = getGame()->getECSManager().addEntity();
     std::vector<SnakeAction> actionList;
-    game->getECSManager().addComponent<std::vector<SnakeAction>>(eAction, actionList);
+    getGame()->getECSManager().addComponent<std::vector<SnakeAction>>(eAction, actionList);
 }
 
 void ScenePacman::input()
 {
-    auto keyInputs = game->getECSManager().getComponents<KeyInput>();
+    auto keyInputs = getGame()->getECSManager().getComponents<KeyInput>();
     for (auto& keyInput : keyInputs)
     {
         if (keyInput->inputType == PRESSED)
         {
-            auto actionList = game->getECSManager().getAnyComponent<std::vector<SnakeAction>>();
+            auto actionList = getGame()->getECSManager().getAnyComponent<std::vector<SnakeAction>>();
             if (keyInput->keyType == W)
             {
                 std::cout << "W pressed" << std::endl;
             }
             else if (keyInput->keyType == ESCAPE_KEY)
             {
-                std::shared_ptr<Scene> scene = std::make_shared<SceneTitleScreen>(game);
-                game->loadScene(scene);
+                std::shared_ptr<Scene> scene = std::make_shared<SceneTitleScreen>(getGame());
+                getGame()->loadScene(scene);
                 return;
             }
         }

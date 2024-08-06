@@ -8,13 +8,16 @@ class Game;
 class Scene
 {
 public:
-    Scene(Game* game);
+    explicit Scene(Game* game);
+    virtual ~Scene() = default;
 
     virtual void init() = 0;
     virtual void input() = 0;
     virtual void update(float deltaTime) = 0;
     virtual void render(sf::RenderWindow& window) = 0;
 
-protected:
+    Game* getGame();
+
+private:
     Game* game = nullptr;
 };
