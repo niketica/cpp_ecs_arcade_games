@@ -11,25 +11,28 @@
 class ComponentManager {
 public:
     template<typename T>
-    void addComponent(Entity entity, T component) {
-        auto shared = std::make_shared<T>(component);
-        components[std::type_index(typeid(T))][entity] = shared;
+    void addComponent(Entity entity, T component)
+    {
+        auto shared = std::make_shared<T>(std::move(component));
+        components[std::type_index(typeid(T))].emplace(entity, shared);
     }
 
     template<typename T>
-    void removeComponent(Entity entity) {
+    void removeComponent(Entity entity)
+    {
         components[std::type_index(typeid(T))].erase(entity);
     }
 
-    void removeComponentsForEntity(Entity entity) {
-        for (auto& component : components)
-        {
+    void removeComponentsForEntity(Entity entity)
+    {
+        for (auto& component : components) {
             component.second.erase(entity);
         }
     }
 
     template<typename T>
-    std::shared_ptr<T> getComponent(Entity entity) {
+    std::shared_ptr<T> getComponent(Entity entity)
+    {
         auto typeIndex = std::type_index(typeid(T));
 
         auto it = components.find(typeIndex);
@@ -41,17 +44,17 @@ public:
             }
         }
 
-        std::cerr << "Entity does not have component: " << typeid(T).name() << std::endl;
-        exit(-1);
+        throw std::runtime_error("Entity does not have component: " + std::string(typeid(T).name()));
     }
 
     template<typename T>
-    std::vector<std::shared_ptr<T>> getComponents() {
+    std::vector<std::shared_ptr<T>> getComponents()
+    {
         auto entities = getEntitiesWithComponent<T>();
 
         std::vector<std::shared_ptr<T>> components;
-        for (Entity e : entities)
-        {
+        components.reserve(entities.size());
+        for (Entity e : entities) {
             auto component = getComponent<T>(e);
             components.push_back(component);
         }
@@ -60,7 +63,8 @@ public:
     }
 
     template<typename T>
-    std::vector<Entity> getEntitiesWithComponent() {
+    std::vector<Entity> getEntitiesWithComponent()
+    {
         std::vector<Entity> entities;
         auto it = components.find(std::type_index(typeid(T)));
 
@@ -69,9 +73,7 @@ public:
             entities.reserve(componentMap.size());
 
             for (const auto& pair : componentMap) {
-                if (pair.second != nullptr) {
-                    entities.push_back(pair.first);
-                }
+                entities.push_back(pair.first);
             }
         }
 
@@ -79,19 +81,20 @@ public:
     }
 
     template<typename T>
-    Entity getFirstEntityWithComponent() {
+    Entity getFirstEntityWithComponent()
+    {
         auto it = components.find(std::type_index(typeid(T)));
         if (it != components.end()) {
             for (const auto& pair : it->second) {
                 return pair.first;
             }
         }
-        std::cerr << "No entity found with component: " << typeid(T).name() << std::endl;
-        exit(-1);
+        throw std::runtime_error("No entity found with component: " + std::string(typeid(T).name()));
     }
 
     template<typename T>
-    std::shared_ptr<T> getAnyComponent() {
+    std::shared_ptr<T> getAnyComponent()
+    {
         Entity e = getFirstEntityWithComponent<T>();
         return getComponent<T>(e);
     }

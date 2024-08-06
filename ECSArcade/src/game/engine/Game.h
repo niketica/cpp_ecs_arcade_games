@@ -70,6 +70,7 @@ private:
     AssetManager assetManager;
     sf::RenderWindow window;
     std::shared_ptr<Scene> currentScene = nullptr;
+    bool running = false;
 
     void init();
     void loadAssets();

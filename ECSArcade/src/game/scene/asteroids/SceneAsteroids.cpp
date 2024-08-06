@@ -125,6 +125,12 @@ void SceneAsteroids::createExplosion(Vec2 position, float scale)
     sf::Sprite sprite;
     sprite = game->getAssetManager().getSprite("explosion_realistic");
 
+    Entity entity = game->getECSManager().addEntity();
+    game->getECSManager().addComponent<EntityTag>(entity, entityTag);
+    game->getECSManager().addComponent<Transform>(entity, transform);
+    game->getECSManager().addComponent<sf::Sprite>(entity, sprite);
+
+    auto cSprite = game->getECSManager().getComponent<sf::Sprite>(entity);
     Animation explosionAnimation = {
     3,   // Number of rows in the spritesheet
     6,   // Number of columns in the spritesheet
@@ -132,13 +138,9 @@ void SceneAsteroids::createExplosion(Vec2 position, float scale)
     101, // Height of each frame (example value)
     0,   // Current frame index
     17,  // Total number of frames available
-    &sprite  // Pointer to the sprite object
+    cSprite.get() // Pointer to the sprite object
     };
-
-    Entity entity = game->getECSManager().addEntity();
-    game->getECSManager().addComponent<EntityTag>(entity, entityTag);
-    game->getECSManager().addComponent<Transform>(entity, transform);
-    game->getECSManager().addComponent<sf::Sprite>(entity, sprite);
+    animationController.updateAnimationFrame(explosionAnimation);
     game->getECSManager().addComponent<Animation>(entity, explosionAnimation);
 }
 
@@ -259,6 +261,13 @@ void SceneAsteroids::input()
 
 void SceneAsteroids::update(float deltaTime)
 {
+    auto explosions = game->getEntitiesWithTag(EXPLOSION);
+    for (auto explosion : explosions)
+    {
+        auto explosionAnimation = game->getECSManager().getComponent<Animation>(explosion);
+        animationController.updateAnimation(*explosionAnimation, deltaTime);
+    }
+
     if (asteroidCount < asteroidMax)
     {
         createAsteroid();
@@ -354,6 +363,8 @@ void SceneAsteroids::updateAsteroid(Entity asteroid)
 
         createAsteroid();
     }
+
+    sprite->rotate(1.f);
 }
 
 void SceneAsteroids::updateLaser(Entity laser)
@@ -505,7 +516,6 @@ void SceneAsteroids::render(sf::RenderWindow& window)
 
                 sf::Vector2f size = (sf::Vector2f)sprite->getTexture()->getSize();
                 sprite->setOrigin(size.x / 2.f, size.y / 2.f);
-                sprite->rotate(1.f);
                 sprite->setPosition(transform->position.x, transform->position.y);
                 sprite->setScale(transform->scale, transform->scale);
 
@@ -569,9 +579,6 @@ void SceneAsteroids::render(sf::RenderWindow& window)
         {
             auto explTransform = game->getECSManager().getComponent<Transform>(explosion);
             auto explosionAnimation = game->getECSManager().getComponent<Animation>(explosion);
-            auto sprite = game->getECSManager().getComponent<sf::Sprite>(explosion);
-            explosionAnimation->sprite = sprite.get();
-            animationController.updateAnimationFrame(*explosionAnimation);
 
             explosionAnimation->sprite->setOrigin(explosionAnimation->width / 2.0f, explosionAnimation->height / 2.0f);
             explosionAnimation->sprite->setPosition(explTransform->position.x, explTransform->position.y);
@@ -584,10 +591,8 @@ void SceneAsteroids::render(sf::RenderWindow& window)
             }
             else
             {
-                window.draw(*sprite);
+                window.draw(*explosionAnimation->sprite);
             }
-
-            window.draw(*sprite);
         }
     }
 

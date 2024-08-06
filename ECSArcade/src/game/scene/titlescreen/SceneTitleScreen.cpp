@@ -231,8 +231,11 @@ void SceneTitleScreen::render(sf::RenderWindow& window)
         window.draw(menuItem->text);
     }
     
-    auto title = game->getECSManager().getAnyComponent<Title>();
-    window.draw(title->text);
+    auto titles = game->getECSManager().getComponents<Title>();
+    for (auto& title : titles)
+    {
+        window.draw(title->text);
+    }
 
     window.display();
 }

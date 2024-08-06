@@ -36,16 +36,12 @@ void Game::loadAssets()
 void Game::start()
 {
     Entity e = ecsManager.addEntity();
-    auto gameStatus = GameStatus{ true };
-    ecsManager.addComponent<GameStatus>(e, gameStatus);
-
     loop();
 }
 
 void Game::stop()
 {
-    auto gameStatus = ecsManager.getAnyComponent<GameStatus>();
-    gameStatus->running = false;
+    running = false;
 
     if (window.isOpen())
     {
@@ -58,15 +54,14 @@ void Game::loop()
     auto lastUpdate = std::chrono::system_clock::now();
     auto now = std::chrono::system_clock::now();
 
-    auto gameStatus = ecsManager.getAnyComponent<GameStatus>();
-
     float timeSlice = 1.f / 60.f;
     float accumulator = 0.f;
 
     int fps = 0;
     float fpsCount = 0.f;
 
-    while (gameStatus->running)
+    running = true;
+    while (running)
     {
         now = std::chrono::system_clock::now();
         std::chrono::duration<float> deltaTime = now - lastUpdate;
@@ -78,7 +73,7 @@ void Game::loop()
         input();
         while (accumulator > timeSlice)
         {
-            update(fDeltaTime);
+            update(timeSlice);
             accumulator -= timeSlice;
         }
         render();
