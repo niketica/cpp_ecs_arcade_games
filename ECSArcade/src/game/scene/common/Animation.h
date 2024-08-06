@@ -22,8 +22,8 @@ struct Animation {
 class AnimationController
 {
 public:
-    AnimationController();
-    void updateAnimation(Animation& animation, float deltaTime);
-    void updateAnimationIndex(Animation& animation);
-    void updateAnimationFrame(Animation& animation);
+    AnimationController() = default;
+    void updateAnimation(Animation& animation, float deltaTime) const;
+    void updateAnimationIndex(Animation& animation) const;
+    void updateAnimationFrame(Animation& animation) const;
 };

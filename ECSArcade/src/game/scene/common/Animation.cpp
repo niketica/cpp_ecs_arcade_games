@@ -1,8 +1,6 @@
 #include "Animation.h"
 
-AnimationController::AnimationController() {}
-
-void AnimationController::updateAnimation(Animation& animation, float deltaTime) {
+void AnimationController::updateAnimation(Animation& animation, float deltaTime) const {
     animation.currentFrameTime += deltaTime;
     if (animation.currentFrameTime >= animation.frameTime)
     {
@@ -12,7 +10,7 @@ void AnimationController::updateAnimation(Animation& animation, float deltaTime)
     }
 }
 
-void AnimationController::updateAnimationIndex(Animation& animation)
+void AnimationController::updateAnimationIndex(Animation& animation) const
 {
     if (animation.loopAnimation)
     {
@@ -28,7 +26,7 @@ void AnimationController::updateAnimationIndex(Animation& animation)
     }
 }
 
-void AnimationController::updateAnimationFrame(Animation& animation)
+void AnimationController::updateAnimationFrame(Animation& animation) const
 {
     // Calculate the row and column for the current frame
     int row = animation.index / animation.columns;
