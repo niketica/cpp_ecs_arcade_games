@@ -481,8 +481,66 @@ void SceneTetris::render(sf::RenderWindow& window)
 
 void SceneTetris::renderBlocks(sf::RenderWindow& window)
 {
-    auto eTetrominos = getGame()->getEntitiesWithTag(TETROMINO);
+    int vertexArraySize = columns * rows * 6;
+    sf::VertexArray vArray(sf::PrimitiveType::Triangles, vertexArraySize);
+    for (int y = 0; y < rows; y++)
+    {
+        for (int x = 0; x < columns; x++)
+        {
+            // get a pointer to the triangles' vertices of the current tile
+            sf::Vertex* triangles = &vArray[(x + y * columns) * 6];
 
+            // define the 6 corners of the two triangles
+            triangles[0].position = sf::Vector2f(x * cellSize, y * cellSize);
+            triangles[1].position = sf::Vector2f((x + 1) * cellSize, y * cellSize);
+            triangles[2].position = sf::Vector2f(x * cellSize, (y + 1) * cellSize);
+            triangles[3].position = sf::Vector2f(x * cellSize, (y + 1) * cellSize);
+            triangles[4].position = sf::Vector2f((x + 1) * cellSize, y * cellSize);
+            triangles[5].position = sf::Vector2f((x + 1) * cellSize, (y + 1) * cellSize);
+
+            sf::Color color = sf::Color::Black;
+
+            triangles[0].color = color;
+            triangles[1].color = color;
+            triangles[2].color = color;
+            triangles[3].color = color;
+            triangles[4].color = color;
+            triangles[5].color = color;
+        }
+    }
+
+    auto eBlocks = getGame()->getEntitiesWithTag(TETRIS_BLOCK);
+    for (auto& entity : eBlocks)
+    {
+        auto block = getGame()->getECSManager().getComponent<Block>(entity);
+
+        int x = block->position.x;
+        int y = block->position.y;
+
+        // get a pointer to the triangles' vertices of the current tile
+        sf::Vertex* triangles = &vArray[(x + y * columns) * 6];
+
+        // define the 6 corners of the two triangles
+        triangles[0].position = sf::Vector2f(x * cellSize, y * cellSize);
+        triangles[1].position = sf::Vector2f((x + 1) * cellSize, y * cellSize);
+        triangles[2].position = sf::Vector2f(x * cellSize, (y + 1) * cellSize);
+        triangles[3].position = sf::Vector2f(x * cellSize, (y + 1) * cellSize);
+        triangles[4].position = sf::Vector2f((x + 1) * cellSize, y * cellSize);
+        triangles[5].position = sf::Vector2f((x + 1) * cellSize, (y + 1) * cellSize);
+
+        sf::Color color = block->color;
+
+        triangles[0].color = color;
+        triangles[1].color = color;
+        triangles[2].color = color;
+        triangles[3].color = color;
+        triangles[4].color = color;
+        triangles[5].color = color;
+    }
+
+    window.draw(vArray);
+
+    auto eTetrominos = getGame()->getEntitiesWithTag(TETROMINO);
     for (auto& entity : eTetrominos)
     {
         auto tetromino = getGame()->getECSManager().getComponent<Tetromino>(entity);
@@ -498,7 +556,6 @@ void SceneTetris::renderBlocks(sf::RenderWindow& window)
             for (int y = 0; y < shapeSize; y++)
             {
                 sf::Color color = tetromino->color;
-                // if (shape[y][x] == 0) color = {255,255,255};
                 if (shape[y][x] == 0) continue;
 
                 sf::RectangleShape block(sf::Vector2f(cellSize, cellSize));
@@ -507,17 +564,6 @@ void SceneTetris::renderBlocks(sf::RenderWindow& window)
                 window.draw(block);
             }
         }
-    }
-
-    auto eBlocks = getGame()->getEntitiesWithTag(TETRIS_BLOCK);
-    for (auto& entity : eBlocks)
-    {
-        auto block = getGame()->getECSManager().getComponent<Block>(entity);
-
-        sf::RectangleShape blockRect(sf::Vector2f(cellSize, cellSize));
-        blockRect.setFillColor(block->color);
-        blockRect.setPosition(block->position.x * cellSize, block->position.y * cellSize);
-        window.draw(blockRect);
     }
 
     for (auto& entity : eTetrominos)
