@@ -1,12 +1,13 @@
 #pragma once
 
-#include "memory"
-#include "chrono"
-#include "SFML/Graphics.hpp"
-#include "../../ecs/ECSManager.h"
-#include "AssetManager.h"
-#include "../scene/common/Scene.h"
-#include "../scene/titlescreen/SceneTitleScreen.h"
+#include <memory>
+#include <chrono>
+#include <SFML/Graphics.hpp>
+
+#include "ecs/ECSManager.h"
+#include "game/engine/AssetManager.h"
+#include "game/scene/common/Scene.h"
+#include "game/scene/titlescreen/SceneTitleScreen.h"
 
 enum KeyType
 {

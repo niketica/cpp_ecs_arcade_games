@@ -2,7 +2,8 @@
 
 #include <iostream>
 #include <queue>
-#include "Entity.h"
+
+#include "ecs/Entity.h"
 
 class EntityManager
 {

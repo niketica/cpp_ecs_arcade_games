@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../common/Scene.h"
-#include "../common/RandomNumberGenerator.h"
-#include "../../engine/Game.h"
-#include "../../common/Vec2.h"
-#include "../titlescreen/SceneTitleScreen.h"
+#include "game/common/Vec2.h"
+#include "game/engine/Game.h"
+#include "game/scene/common/Scene.h"
+#include "game/scene/common/RandomNumberGenerator.h"
+#include "game/scene/titlescreen/SceneTitleScreen.h"
 
 enum TetrisAction
 {

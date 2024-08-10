@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Entity.h"
-#include "EntityManager.h"
-#include "ComponentManager.h"
+#include "ecs/Entity.h"
+#include "ecs/EntityManager.h"
+#include "ecs/ComponentManager.h"
 
 class ECSManager : public EntityManager, public ComponentManager
 {

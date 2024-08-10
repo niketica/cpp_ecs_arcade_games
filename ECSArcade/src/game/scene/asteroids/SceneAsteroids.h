@@ -2,12 +2,13 @@
 
 #include "memory"
 #include <cmath>
-#include "../common/Scene.h"
-#include "../common/Animation.h"
-#include "../common/RandomNumberGenerator.h"
-#include "../../engine/Game.h"
-#include "../titlescreen/SceneTitleScreen.h"
-#include "../../common/Vec2.h"
+
+#include "game/engine/Game.h"
+#include "game/common/Vec2.h"
+#include "game/scene/common/Scene.h"
+#include "game/scene/common/Animation.h"
+#include "game/scene/common/RandomNumberGenerator.h"
+#include "game/scene/titlescreen/SceneTitleScreen.h"
 
 struct Transform
 {

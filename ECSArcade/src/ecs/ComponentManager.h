@@ -6,7 +6,8 @@
 #include <vector>
 #include <stdexcept>
 #include <string>
-#include "Entity.h"
+
+#include "ecs/Entity.h"
 
 class ComponentManager {
 public:

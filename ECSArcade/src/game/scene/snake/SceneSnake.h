@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../common/Scene.h"
-#include "../../common/Vec2.h"
-#include "../../engine/Game.h"
-#include "../titlescreen/SceneTitleScreen.h"
+#include "game/common/Vec2.h"
+#include "game/engine/Game.h"
+#include "game/scene/common/Scene.h"
+#include "game/scene/titlescreen/SceneTitleScreen.h"
 
 enum SnakeAction
 {

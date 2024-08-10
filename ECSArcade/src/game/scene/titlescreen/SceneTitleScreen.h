@@ -2,13 +2,14 @@
 
 #include <vector>
 #include <string>
-#include "../common/Scene.h"
-#include "../common/Animation.h"
-#include "../../engine/Game.h"
-#include "../asteroids/SceneAsteroids.h"
-#include "../snake/SceneSnake.h"
-#include "../tetris/SceneTetris.h"
-#include "../pacman/ScenePacman.h"
+
+#include "game/engine/Game.h"
+#include "game/scene/common/Scene.h"
+#include "game/scene/common/Animation.h"
+#include "game/scene/asteroids/SceneAsteroids.h"
+#include "game/scene/snake/SceneSnake.h"
+#include "game/scene/tetris/SceneTetris.h"
+#include "game/scene/pacman/ScenePacman.h"
 
 struct MenuItem
 {
