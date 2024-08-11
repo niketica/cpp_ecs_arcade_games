@@ -10,7 +10,7 @@ void SceneTetris::init()
     activateNextTetromino();
 
     Entity eGameStatus = getGame()->getECSManager().addEntity();
-    getGame()->getECSManager().addComponent<EntityTag>(eGameStatus, EntityTag(TETRIS_STATUS));
+    getGame()->getECSManager().addComponent<TetrisTag>(eGameStatus, TetrisTag::TETRIS_STATUS);
     getGame()->getECSManager().addComponent<TetrisStatus>(eGameStatus, {});
 }
 
@@ -36,16 +36,55 @@ void SceneTetris::createNextTetromino()
     trimFirstRow(tetromino);
     trimFirstCol(tetromino);
 
-    EntityTag tag{ TETROMINO };
-
     auto entity = getGame()->getECSManager().addEntity();
-    getGame()->getECSManager().addComponent<EntityTag>(entity, tag);
+    getGame()->getECSManager().addComponent<TetrisTag>(entity, TetrisTag::TETROMINO);
     getGame()->getECSManager().addComponent<Tetromino>(entity, tetromino);
+}
+
+Entity SceneTetris::getEntityWithTag(TetrisTag tag)
+{
+    auto entities = getGame()->getECSManager().getEntitiesWithComponent<TetrisTag>();
+
+    Entity returnEntity = NULL;
+    for (auto entity : entities)
+    {
+        auto entityTag = getGame()->getECSManager().getComponent<TetrisTag>(entity);
+
+        if (*entityTag == tag)
+        {
+            returnEntity = entity;
+        }
+    }
+
+    if (returnEntity == NULL)
+    {
+        std::cerr << "ERROR!!! Entity not found with tag." << std::endl;
+        exit(-1);
+    }
+
+    return returnEntity;
+}
+
+std::vector<Entity> SceneTetris::getEntitiesWithTag(TetrisTag tag)
+{
+    auto entities = getGame()->getECSManager().getEntitiesWithComponent<TetrisTag>();
+    std::vector<Entity> filtered;
+
+    for (auto entity : entities)
+    {
+        auto entityTag = getGame()->getECSManager().getComponent<TetrisTag>(entity);
+        if (*entityTag == tag)
+        {
+            filtered.push_back(entity);
+        }
+    }
+
+    return filtered;
 }
 
 void SceneTetris::activateNextTetromino()
 {
-    for (const auto& entity : getGame()->getEntitiesWithTag(TETROMINO))
+    for (const auto& entity : getEntitiesWithTag(TetrisTag::TETROMINO))
     {
         auto tetromino = getGame()->getECSManager().getComponent<Tetromino>(entity);
 
@@ -56,7 +95,7 @@ void SceneTetris::activateNextTetromino()
 
         if (isCollisionBottom(*tetromino) && isCollisionHorizontal(*tetromino, 0))
         {
-            for (const auto& eStatus : getGame()->getEntitiesWithTag(TETRIS_STATUS))
+            for (const auto& eStatus : getEntitiesWithTag(TetrisTag::TETRIS_STATUS))
             {
                 auto status = getGame()->getECSManager().getComponent<TetrisStatus>(eStatus);
                 status->running = false;
@@ -86,15 +125,15 @@ void SceneTetris::input()
             auto actionList = getGame()->getECSManager().getAnyComponent<std::vector<TetrisAction>>();
             if (keyInput->keyType == A)
             {
-                actionList->push_back(TETRIS_LEFT);
+                actionList->push_back(TetrisAction::TETRIS_LEFT);
             }
             else if (keyInput->keyType == D)
             {
-                actionList->push_back(TETRIS_RIGHT);
+                actionList->push_back(TetrisAction::TETRIS_RIGHT);
             }
             else if (keyInput->keyType == S)
             {
-                actionList->push_back(TETRIS_DOWN);
+                actionList->push_back(TetrisAction::TETRIS_DOWN);
             }
             else if (keyInput->keyType == R)
             {
@@ -102,7 +141,7 @@ void SceneTetris::input()
             }
             else if (keyInput->keyType == SPACE_KEY)
             {
-                actionList->push_back(TETRIS_ROTATE);
+                actionList->push_back(TetrisAction::TETRIS_ROTATE);
             }
             else if (keyInput->keyType == ESCAPE_KEY)
             {
@@ -116,7 +155,7 @@ void SceneTetris::input()
 
 void SceneTetris::update(float deltaTime)
 {
-    for (const auto& entity : getGame()->getEntitiesWithTag(TETRIS_STATUS))
+    for (const auto& entity : getEntitiesWithTag(TetrisTag::TETRIS_STATUS))
     {
         auto status = getGame()->getECSManager().getComponent<TetrisStatus>(entity);
 
@@ -135,9 +174,9 @@ void SceneTetris::update(float deltaTime)
         status->currentMovementCooldown = status->movementCooldown;
     }
 
-    auto eTetrominos = getGame()->getEntitiesWithTag(TETROMINO);
+    auto eTetrominos = getEntitiesWithTag(TetrisTag::TETROMINO);
 
-    for (auto& entity : eTetrominos)
+    for (const auto& entity : eTetrominos)
     {
         auto tetromino = getGame()->getECSManager().getComponent<Tetromino>(entity);
 
@@ -159,39 +198,38 @@ void SceneTetris::update(float deltaTime)
 
 void SceneTetris::processActions()
 {
-    auto eTetrominos = getGame()->getEntitiesWithTag(TETROMINO);
+    auto eTetrominos = getEntitiesWithTag(TetrisTag::TETROMINO);
 
-    for (auto& entity : eTetrominos)
+    for (const auto& entity : eTetrominos)
     {
         auto tetromino = getGame()->getECSManager().getComponent<Tetromino>(entity);
-
         if (!tetromino->active) continue;
 
         auto actionList = getGame()->getECSManager().getAnyComponent<std::vector<TetrisAction>>();
-        for (auto& action : *actionList)
+        for (const auto& action : *actionList)
         {
-            if (action == TETRIS_LEFT)
+            if (action == TetrisAction::TETRIS_LEFT)
             {
                 if (!isCollisionHorizontal(*tetromino, -1))
                 {
                     tetromino->topLeftPos.x--;
                 }
             }
-            else if (action == TETRIS_RIGHT)
+            else if (action == TetrisAction::TETRIS_RIGHT)
             {
                 if (!isCollisionHorizontal(*tetromino, 1))
                 {
                     tetromino->topLeftPos.x++;
                 }
             }
-            else if (action == TETRIS_DOWN)
+            else if (action == TetrisAction::TETRIS_DOWN)
             {
                 if (!isCollisionBottom(*tetromino))
                 {
                     tetromino->topLeftPos.y++;
                 }
             }
-            else if (action == TETRIS_ROTATE)
+            else if (action == TetrisAction::TETRIS_ROTATE)
             {
                 rotate(*tetromino);
             }
@@ -215,7 +253,7 @@ void SceneTetris::updateGrid(const Tetromino& tetromino)
             Block block{ Vec2{xPos, yPos}, tetromino.color };
 
             auto eBlock = getGame()->getECSManager().addEntity();
-            getGame()->getECSManager().addComponent<EntityTag>(eBlock, EntityTag { TETRIS_BLOCK });
+            getGame()->getECSManager().addComponent<TetrisTag>(eBlock, TetrisTag::TETRIS_BLOCK);
             getGame()->getECSManager().addComponent<Block>(eBlock, block);
         }
     }
@@ -278,8 +316,8 @@ bool SceneTetris::isCollisionHorizontal(const Tetromino& activeTetromino, const 
 
 bool SceneTetris::blockOccupiesPosition(Vec2 pos)
 {
-    auto eBlocks = getGame()->getEntitiesWithTag(TETRIS_BLOCK);
-    for (auto& entity : eBlocks)
+    auto eBlocks = getEntitiesWithTag(TetrisTag::TETRIS_BLOCK);
+    for (const auto& entity : eBlocks)
     {
         auto block = getGame()->getECSManager().getComponent<Block>(entity);
 
@@ -402,7 +440,7 @@ void SceneTetris::trimFirstCol(Tetromino& tetromino)
 
 void SceneTetris::processClearRow()
 {
-    auto eStatus = getGame()->getEntitiesWithTag(TETRIS_STATUS);
+    auto eStatus = getEntitiesWithTag(TetrisTag::TETRIS_STATUS);
 
     for (int y = 0; y < rows; y++)
     {
@@ -410,7 +448,7 @@ void SceneTetris::processClearRow()
         {
             clearRow(y);
 
-            for (auto& entity : eStatus)
+            for (const auto& entity : eStatus)
             {
                 auto status = getGame()->getECSManager().getComponent<TetrisStatus>(entity);
                 status->rowsCleared++;
@@ -425,8 +463,8 @@ bool SceneTetris::isRowFilled(int y)
 {
     int rowValue = 0;
 
-    auto eBlocks = getGame()->getEntitiesWithTag(TETRIS_BLOCK);
-    for (auto& entity : eBlocks)
+    auto eBlocks = getEntitiesWithTag(TetrisTag::TETRIS_BLOCK);
+    for (const auto& entity : eBlocks)
     {
         auto block = getGame()->getECSManager().getComponent<Block>(entity);
 
@@ -441,7 +479,7 @@ bool SceneTetris::isRowFilled(int y)
 
 void SceneTetris::clearRow(int y)
 {
-    for (auto& entity : getGame()->getEntitiesWithTag(TETRIS_BLOCK))
+    for (const auto& entity : getEntitiesWithTag(TetrisTag::TETRIS_BLOCK))
     {
         auto block = getGame()->getECSManager().getComponent<Block>(entity);
 
@@ -451,7 +489,7 @@ void SceneTetris::clearRow(int y)
         }
     }
 
-    for (auto& entity : getGame()->getEntitiesWithTag(TETRIS_BLOCK))
+    for (const auto& entity : getEntitiesWithTag(TetrisTag::TETRIS_BLOCK))
     {
         auto block = getGame()->getECSManager().getComponent<Block>(entity);
 
@@ -508,9 +546,6 @@ void SceneTetris::setBlockColor(const GridBlock& blok) const
 
 void SceneTetris::renderGridLines(sf::RenderWindow& window)
 {
-    auto width = getGame()->getWidth();
-    auto height = getGame()->getHeight();
-
     for (int x = 0; x < cellSize * columns + cellSize; x += cellSize)
     {
         sf::Vertex line[] =
@@ -546,8 +581,7 @@ void SceneTetris::renderGrid(sf::RenderWindow& window)
         }
     }
 
-    auto eBlocks = getGame()->getEntitiesWithTag(TETRIS_BLOCK);
-    for (const auto& entity : eBlocks)
+    for (const auto& entity : getEntitiesWithTag(TetrisTag::TETRIS_BLOCK))
     {
         auto block = getGame()->getECSManager().getComponent<Block>(entity);
         const auto position = block->position;
@@ -557,8 +591,7 @@ void SceneTetris::renderGrid(sf::RenderWindow& window)
         setBlockColor({ vArray, columns, x, y, 0, 0, color.r, color.g, color.b });
     }
 
-    auto eTetrominos = getGame()->getEntitiesWithTag(TETROMINO);
-    for (const auto& entity : eTetrominos)
+    for (const auto& entity : getEntitiesWithTag(TetrisTag::TETROMINO))
     {
         auto tetromino = getGame()->getECSManager().getComponent<Tetromino>(entity);
 
@@ -600,8 +633,7 @@ void SceneTetris::renderNextTetromino(sf::RenderWindow& window)
         }
     }
 
-    auto eTetrominos = getGame()->getEntitiesWithTag(TETROMINO);
-    for (const auto& entity : eTetrominos)
+    for (const auto& entity : getEntitiesWithTag(TetrisTag::TETROMINO))
     {
         auto tetromino = getGame()->getECSManager().getComponent<Tetromino>(entity);
 
@@ -625,7 +657,7 @@ void SceneTetris::renderNextTetromino(sf::RenderWindow& window)
 
 void SceneTetris::renderScore(sf::RenderWindow& window)
 {
-    auto eStatus = getGame()->getEntitiesWithTag(TETRIS_STATUS);
+    auto eStatus = getEntitiesWithTag(TetrisTag::TETRIS_STATUS);
     for (const auto& entity : eStatus)
     {
         auto status = getGame()->getECSManager().getComponent<TetrisStatus>(entity);

@@ -8,7 +8,7 @@
 #include "game/scene/common/RandomNumberGenerator.h"
 #include "game/scene/titlescreen/SceneTitleScreen.h"
 
-enum TetrisAction
+enum class TetrisAction
 {
     TETRIS_DOWN,
     TETRIS_LEFT,
@@ -16,10 +16,30 @@ enum TetrisAction
     TETRIS_ROTATE
 };
 
+enum class TetrisTag
+{
+    TETROMINO,
+    TETRIS_BLOCK,
+    TETRIS_STATUS
+};
+
 struct Block
 {
     Vec2 position { 0, 0 };
     sf::Color color{ 0, 0, 0 };
+};
+
+struct GridBlock
+{
+    sf::VertexArray& vArray;
+    int width = 1;
+    int x = 0;
+    int y = 0;
+    int xOffset = 0;
+    int yOffset = 0;
+    int r = 0;
+    int g = 0;
+    int b = 0;
 };
 
 struct Shape
@@ -43,26 +63,6 @@ struct TetrisStatus
     int currentMovementCooldown = 0;
     int rowsCleared = 0;
     bool running = true;
-};
-
-enum TetrisTag
-{
-    TETROMINO,
-    TETRIS_BLOCK,
-    TETRIS_STATUS
-};
-
-struct GridBlock
-{
-    sf::VertexArray& vArray;
-    int width = 1;
-    int x = 0;
-    int y = 0;
-    int xOffset = 0;
-    int yOffset = 0;
-    int r = 0;
-    int g = 0;
-    int b = 0;
 };
 
 class SceneTetris : public Scene
@@ -132,6 +132,9 @@ private:
         Tetromino { sf::Color(  0, 255,   0), 5 },
         Tetromino { sf::Color(255,   0,   0), 6 }
     };
+
+    Entity getEntityWithTag(TetrisTag tag);
+    std::vector<Entity> getEntitiesWithTag(TetrisTag tag);
 
     void createActionList();
     void createNextTetromino();
