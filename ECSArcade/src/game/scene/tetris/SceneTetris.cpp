@@ -33,8 +33,8 @@ void SceneTetris::createNextTetromino()
     }
 
     tetromino.shape = tShape;
-    do {} while (trimFirstRow(tetromino));
-    do {} while (trimFirstCol(tetromino));
+    trimFirstRow(tetromino);
+    trimFirstCol(tetromino);
 
     EntityTag tag{ TETROMINO };
 
@@ -45,9 +45,7 @@ void SceneTetris::createNextTetromino()
 
 void SceneTetris::activateNextTetromino()
 {
-    auto eTetrominos = getGame()->getEntitiesWithTag(TETROMINO);
-
-    for (auto& entity : eTetrominos)
+    for (const auto& entity : getGame()->getEntitiesWithTag(TETROMINO))
     {
         auto tetromino = getGame()->getECSManager().getComponent<Tetromino>(entity);
 
@@ -58,10 +56,9 @@ void SceneTetris::activateNextTetromino()
 
         if (isCollisionBottom(*tetromino) && isCollisionHorizontal(*tetromino, 0))
         {
-            auto eStatus = getGame()->getEntitiesWithTag(TETRIS_STATUS);
-            for (auto& entity : eStatus)
+            for (const auto& eStatus : getGame()->getEntitiesWithTag(TETRIS_STATUS))
             {
-                auto status = getGame()->getECSManager().getComponent<TetrisStatus>(entity);
+                auto status = getGame()->getECSManager().getComponent<TetrisStatus>(eStatus);
                 status->running = false;
             }
         }
@@ -82,7 +79,7 @@ void SceneTetris::createActionList()
 void SceneTetris::input()
 {
     auto keyInputs = getGame()->getECSManager().getComponents<KeyInput>();
-    for (auto& keyInput : keyInputs)
+    for (const auto& keyInput : keyInputs)
     {
         if (keyInput->inputType == PRESSED)
         {
@@ -114,16 +111,12 @@ void SceneTetris::input()
                 return;
             }
         }
-        else if (keyInput->inputType == RELEASED)
-        {
-        }
     }
 }
 
 void SceneTetris::update(float deltaTime)
 {
-    auto eStatus = getGame()->getEntitiesWithTag(TETRIS_STATUS);
-    for (auto& entity : eStatus)
+    for (const auto& entity : getGame()->getEntitiesWithTag(TETRIS_STATUS))
     {
         auto status = getGame()->getECSManager().getComponent<TetrisStatus>(entity);
 
@@ -208,19 +201,19 @@ void SceneTetris::processActions()
     }
 }
 
-void SceneTetris::updateGrid(Tetromino& tetromino)
+void SceneTetris::updateGrid(const Tetromino& tetromino)
 {
-    auto& shape = tetromino.shape.value;
+    const auto& shape = tetromino.shape.value;
     for (int y = 0; y < shapeSize; y++)
     {
         for (int x = 0; x < shapeSize; x++)
         {
             if (shape[y][x] == 0) continue;
 
-            float xPos = x + tetromino.topLeftPos.x;
-            float yPos = y + tetromino.topLeftPos.y;
-
+            auto xPos = x + tetromino.topLeftPos.x;
+            auto yPos = y + tetromino.topLeftPos.y;
             Block block{ Vec2{xPos, yPos}, tetromino.color };
+
             auto eBlock = getGame()->getECSManager().addEntity();
             getGame()->getECSManager().addComponent<EntityTag>(eBlock, EntityTag { TETRIS_BLOCK });
             getGame()->getECSManager().addComponent<Block>(eBlock, block);
@@ -228,7 +221,7 @@ void SceneTetris::updateGrid(Tetromino& tetromino)
     }
 }
 
-bool SceneTetris::isCollisionBottom(Tetromino& activeTetromino)
+bool SceneTetris::isCollisionBottom(const Tetromino& activeTetromino)
 {
     auto shape = activeTetromino.shape.value;
     for (int x = 0; x < shapeSize; x++)
@@ -237,8 +230,8 @@ bool SceneTetris::isCollisionBottom(Tetromino& activeTetromino)
         {
             if (shape[y][x] == 0) continue;
 
-            float xPos = x + activeTetromino.topLeftPos.x;
-            float yPos = y + activeTetromino.topLeftPos.y;
+            auto xPos = x + activeTetromino.topLeftPos.x;
+            auto yPos = y + activeTetromino.topLeftPos.y;
 
             if (yPos + 1 >= rows || blockOccupiesPosition(Vec2{ xPos, yPos + 1 }))
             {
@@ -250,7 +243,7 @@ bool SceneTetris::isCollisionBottom(Tetromino& activeTetromino)
     return false;
 }
 
-bool SceneTetris::isCollisionHorizontal(Tetromino& activeTetromino, int xOffset)
+bool SceneTetris::isCollisionHorizontal(const Tetromino& activeTetromino, const int xOffset)
 {
     auto shape = activeTetromino.shape.value;
     for (int x = 0; x < shapeSize; x++)
@@ -259,8 +252,8 @@ bool SceneTetris::isCollisionHorizontal(Tetromino& activeTetromino, int xOffset)
         {
             if (shape[y][x] == 0) continue;
 
-            float xPos = x + activeTetromino.topLeftPos.x;
-            float yPos = y + activeTetromino.topLeftPos.y;
+            auto xPos = x + activeTetromino.topLeftPos.x;
+            auto yPos = y + activeTetromino.topLeftPos.y;
 
             bool collideWallLeft = false;
             bool collideWallRight = false;
@@ -301,14 +294,12 @@ bool SceneTetris::blockOccupiesPosition(Vec2 pos)
 
 void SceneTetris::rotate(Tetromino& tetromino)
 {
-    // TODO check if rotation does not collide with other blocks / edge of screen
-
     auto& currentShape = tetromino.shape.value;
-    int oldShape[shapeSize][shapeSize] = {};
-    int newShape[shapeSize][shapeSize] = {};
+
+    std::array<std::array<int, shapeSize>, shapeSize> oldShape{ {} };
+    std::array<std::array<int, shapeSize>, shapeSize> newShape{ {} };
 
     int newX = shapeSize - 1;
-
     for (int x = 0; x < shapeSize; x++)
     {
         for (int y = 0; y < shapeSize; y++)
@@ -326,8 +317,8 @@ void SceneTetris::rotate(Tetromino& tetromino)
         }
     }
 
-    do {} while (trimFirstRow(tetromino));
-    do {} while (trimFirstCol(tetromino));
+    trimFirstRow(tetromino);
+    trimFirstCol(tetromino);
 
     bool collision = false;
     for (int x = 0; x < shapeSize; x++)
@@ -336,8 +327,8 @@ void SceneTetris::rotate(Tetromino& tetromino)
         {
             if (currentShape[y][x] == 0) continue;
 
-            float xPos = x + tetromino.topLeftPos.x;
-            float yPos = y + tetromino.topLeftPos.y;
+            auto xPos = x + tetromino.topLeftPos.x;
+            auto yPos = y + tetromino.topLeftPos.y;
 
             if (xPos < 0 || xPos >= columns || yPos < 0 || yPos >= rows || blockOccupiesPosition( Vec2{ xPos, yPos } ))
             {
@@ -359,7 +350,7 @@ void SceneTetris::rotate(Tetromino& tetromino)
     }
 }
 
-bool SceneTetris::trimFirstRow(Tetromino& tetromino)
+void SceneTetris::trimFirstRow(Tetromino& tetromino)
 {
     auto& currentShape = tetromino.shape.value;
 
@@ -367,7 +358,7 @@ bool SceneTetris::trimFirstRow(Tetromino& tetromino)
     {
         if (currentShape[0][x] > 0)
         {
-            return false;
+            return;
         }
     }
 
@@ -380,10 +371,11 @@ bool SceneTetris::trimFirstRow(Tetromino& tetromino)
         }
     }
 
-    return true;
+    trimFirstRow(tetromino);
+    return;
 }
 
-bool SceneTetris::trimFirstCol(Tetromino& tetromino)
+void SceneTetris::trimFirstCol(Tetromino& tetromino)
 {
     auto& currentShape = tetromino.shape.value;
 
@@ -391,7 +383,7 @@ bool SceneTetris::trimFirstCol(Tetromino& tetromino)
     {
         if (currentShape[y][0] > 0)
         {
-            return false;
+            return;
         }
     }
 
@@ -404,7 +396,8 @@ bool SceneTetris::trimFirstCol(Tetromino& tetromino)
         currentShape[y][shapeSize - 1] = 0;
     }
 
-    return true;
+    trimFirstCol(tetromino);
+    return;
 }
 
 void SceneTetris::processClearRow()
@@ -480,13 +473,18 @@ void SceneTetris::render(sf::RenderWindow& window)
     window.display();
 }
 
-void SceneTetris::setBlockColor(sf::VertexArray& vArray, int width, int x, int y, int r, int g, int b)
+void SceneTetris::setBlockColor(const GridBlock& blok) const
 {
-    setBlockColor(vArray, width, x, y, 0, 0, r, g, b);
-}
+    sf::VertexArray& vArray = blok.vArray;
+    const int width = blok.width;
+    const int x = blok.x;
+    const int y = blok.y;
+    const int xOffset = blok.xOffset;
+    const int yOffset = blok.yOffset;
+    const int r = blok.r;
+    const int g = blok.g;
+    const int b = blok.b;
 
-void SceneTetris::setBlockColor(sf::VertexArray& vArray, int width, int x, int y, int xOffset, int yOffset, int r, int g, int b)
-{
     // get a pointer to the triangles' vertices of the current tile
     sf::Vertex* triangles = &vArray[(x + y * width) * 6];
 
@@ -544,7 +542,7 @@ void SceneTetris::renderGrid(sf::RenderWindow& window)
     {
         for (int x = 0; x < columns; x++)
         {
-            setBlockColor(vArray, columns, x, y, 0, 0, 0);
+            setBlockColor({ vArray, columns, x, y, 0, 0, 0, 0, 0 });
         }
     }
 
@@ -556,7 +554,7 @@ void SceneTetris::renderGrid(sf::RenderWindow& window)
         const auto x = (int)position.x;
         const auto y = (int)position.y;
         const sf::Color& color = block->color;
-        setBlockColor(vArray, columns, x, y, color.r, color.g, color.b);
+        setBlockColor({ vArray, columns, x, y, 0, 0, color.r, color.g, color.b });
     }
 
     auto eTetrominos = getGame()->getEntitiesWithTag(TETROMINO);
@@ -579,7 +577,7 @@ void SceneTetris::renderGrid(sf::RenderWindow& window)
                 if (shape[y][x] == 0) continue;
                 const int xPos = x + xOffset;
                 const int yPos = y + yOffset;
-                setBlockColor(vArray, columns, xPos, yPos, color.r, color.g, color.b);
+                setBlockColor({ vArray, columns, xPos, yPos, 0, 0, color.r, color.g, color.b });
             }
         }
     }
@@ -598,7 +596,7 @@ void SceneTetris::renderNextTetromino(sf::RenderWindow& window)
     {
         for (int x = 0; x < shapeSize; x++)
         {
-            setBlockColor(vArray, shapeSize, x, y, xOffset, yOffset, 0, 0, 0);
+            setBlockColor({ vArray, shapeSize, x, y, xOffset, yOffset, 0, 0, 0 });
         }
     }
 
@@ -617,7 +615,7 @@ void SceneTetris::renderNextTetromino(sf::RenderWindow& window)
                 if (shape[y][x] == 0) continue;
 
                 sf::Color color = tetromino->color;
-                setBlockColor(vArray, shapeSize, x, y, xOffset, yOffset, color.r, color.g, color.b);
+                setBlockColor({ vArray, shapeSize, x, y, xOffset, yOffset, color.r, color.g, color.b });
             }
         }
     }

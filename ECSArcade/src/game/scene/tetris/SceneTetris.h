@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include "game/common/Vec2.h"
 #include "game/engine/Game.h"
 #include "game/scene/common/Scene.h"
@@ -48,6 +50,19 @@ enum TetrisTag
     TETROMINO,
     TETRIS_BLOCK,
     TETRIS_STATUS
+};
+
+struct GridBlock
+{
+    sf::VertexArray& vArray;
+    int width = 1;
+    int x = 0;
+    int y = 0;
+    int xOffset = 0;
+    int yOffset = 0;
+    int r = 0;
+    int g = 0;
+    int b = 0;
 };
 
 class SceneTetris : public Scene
@@ -121,21 +136,19 @@ private:
     void createActionList();
     void createNextTetromino();
     void activateNextTetromino();
-    bool isCollisionBottom(Tetromino& activeTetromino);
-    bool isCollisionHorizontal(Tetromino& activeTetromino, int xOffset);
+    bool isCollisionBottom(const Tetromino& activeTetromino);
+    bool isCollisionHorizontal(const Tetromino& activeTetromino, const int xOffset);
     bool blockOccupiesPosition(Vec2 pos);
     void rotate(Tetromino& tetromino);
-    bool trimFirstRow(Tetromino& tetromino);
-    bool trimFirstCol(Tetromino& tetromino);
-    void updateGrid(Tetromino& tetromino);
+    void trimFirstRow(Tetromino& tetromino);
+    void trimFirstCol(Tetromino& tetromino);
+    void updateGrid(const Tetromino& tetromino);
     void processClearRow();
     bool isRowFilled(int y);
     void clearRow(int y);
     void processActions();
-    void setBlockColor(sf::VertexArray& vArray, int width, int x, int y, int xOffset, int yOffset, int r, int g, int b);
-    void setBlockColor(sf::VertexArray& vArray, int width, int x, int y, int r, int g, int b);
+    void setBlockColor(const GridBlock& block) const;
 
-    void renderBlocks(sf::RenderWindow& window);
     void renderGridLines(sf::RenderWindow& window);
     void renderGrid(sf::RenderWindow& window);
     void renderNextTetromino(sf::RenderWindow& window);
