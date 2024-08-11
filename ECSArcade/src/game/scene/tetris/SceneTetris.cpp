@@ -316,8 +316,7 @@ bool SceneTetris::isCollisionHorizontal(const Tetromino& activeTetromino, const 
 
 bool SceneTetris::blockOccupiesPosition(Vec2 pos)
 {
-    auto eBlocks = getEntitiesWithTag(TetrisTag::TETRIS_BLOCK);
-    for (const auto& entity : eBlocks)
+    for (const auto& entity : getEntitiesWithTag(TetrisTag::TETRIS_BLOCK))
     {
         auto block = getGame()->getECSManager().getComponent<Block>(entity);
 
@@ -462,9 +461,7 @@ void SceneTetris::processClearRow()
 bool SceneTetris::isRowFilled(int y)
 {
     int rowValue = 0;
-
-    auto eBlocks = getEntitiesWithTag(TetrisTag::TETRIS_BLOCK);
-    for (const auto& entity : eBlocks)
+    for (const auto& entity : getEntitiesWithTag(TetrisTag::TETRIS_BLOCK))
     {
         auto block = getGame()->getECSManager().getComponent<Block>(entity);
 
@@ -473,7 +470,6 @@ bool SceneTetris::isRowFilled(int y)
             rowValue++;
         }
     }
-
     return rowValue == columns;
 }
 
@@ -519,20 +515,34 @@ void SceneTetris::setBlockColor(const GridBlock& blok) const
     const int y = blok.y;
     const int xOffset = blok.xOffset;
     const int yOffset = blok.yOffset;
-    const int r = blok.r;
-    const int g = blok.g;
-    const int b = blok.b;
+    const auto r = (sf::Uint8) blok.r;
+    const auto g = (sf::Uint8) blok.g;
+    const auto b = (sf::Uint8) blok.b;
 
     // get a pointer to the triangles' vertices of the current tile
-    sf::Vertex* triangles = &vArray[(x + y * width) * 6];
+    const int vArrayIndex = (x + y * width) * 6;
+    sf::Vertex* triangles = &vArray[vArrayIndex];
 
     // define the 6 corners of the two triangles
-    triangles[0].position = sf::Vector2f(x * cellSize + xOffset, y * cellSize + yOffset);
-    triangles[1].position = sf::Vector2f((x + 1) * cellSize + xOffset, y * cellSize + yOffset);
-    triangles[2].position = sf::Vector2f(x * cellSize + xOffset, (y + 1) * cellSize + yOffset);
-    triangles[3].position = sf::Vector2f(x * cellSize + xOffset, (y + 1) * cellSize + yOffset);
-    triangles[4].position = sf::Vector2f((x + 1) * cellSize + xOffset, y * cellSize + yOffset);
-    triangles[5].position = sf::Vector2f((x + 1) * cellSize + xOffset, (y + 1) * cellSize + yOffset);
+    auto pos0x = (float)(x * cellSize + xOffset);
+    auto pos0y = (float)(y * cellSize + yOffset);
+    auto pos1x = (float)((x + 1) * cellSize + xOffset);
+    auto pos1y = (float)(y * cellSize + yOffset);
+    auto pos2x = (float)(x * cellSize + xOffset);
+    auto pos2y = (float)((y + 1) * cellSize + yOffset);
+    auto pos3x = (float)(x * cellSize + xOffset);
+    auto pos3y = (float)((y + 1) * cellSize + yOffset);
+    auto pos4x = (float)((x + 1) * cellSize + xOffset);
+    auto pos4y = (float)(y * cellSize + yOffset);
+    auto pos5x = (float)((x + 1) * cellSize + xOffset);
+    auto pos5y = (float)((y + 1) * cellSize + yOffset);
+
+    triangles[0].position = sf::Vector2f(pos0x, pos0y);
+    triangles[1].position = sf::Vector2f(pos1x, pos1y);
+    triangles[2].position = sf::Vector2f(pos2x, pos2y);
+    triangles[3].position = sf::Vector2f(pos3x, pos3y);
+    triangles[4].position = sf::Vector2f(pos4x, pos4y);
+    triangles[5].position = sf::Vector2f(pos5x, pos5y);
 
     sf::Color color(r,g,b);
 
@@ -544,28 +554,28 @@ void SceneTetris::setBlockColor(const GridBlock& blok) const
     triangles[5].color = color;
 }
 
-void SceneTetris::renderGridLines(sf::RenderWindow& window)
+void SceneTetris::renderGridLines(sf::RenderWindow& window) const
 {
     for (int x = 0; x < cellSize * columns + cellSize; x += cellSize)
     {
-        sf::Vertex line[] =
+        std::array<sf::Vertex, 2> line
         {
             sf::Vertex(sf::Vector2f(x, 0)),
             sf::Vertex(sf::Vector2f(x, cellSize * rows))
         };
 
-        window.draw(line, 2, sf::Lines);
+        window.draw(line.data(), 2, sf::Lines);
     }
 
     for (int y = 0; y < cellSize * rows + cellSize; y += cellSize)
     {
-        sf::Vertex line[] =
+        std::array<sf::Vertex, 2> line
         {
             sf::Vertex(sf::Vector2f(0, y)),
             sf::Vertex(sf::Vector2f(cellSize * columns, y))
         };
 
-        window.draw(line, 2, sf::Lines);
+        window.draw(line.data(), 2, sf::Lines);
     }
 }
 
@@ -662,10 +672,10 @@ void SceneTetris::renderScore(sf::RenderWindow& window)
     {
         auto status = getGame()->getECSManager().getComponent<TetrisStatus>(entity);
         auto& openSans = getGame()->getAssetManager().getFont("OpenSans");
-        sf::Text scoreTxt("Score: " + std::to_string(status->rowsCleared), openSans, 34);
+        sf::Text scoreTxt(std::format("Score: {}", std::to_string(status->rowsCleared)), openSans, 34);
 
-        auto xPos = (columns + 1) * cellSize;
-        auto yPos = (rows * cellSize) / 2;
+        auto xPos = (float)((columns + 1) * cellSize);
+        auto yPos = (float)((rows * cellSize) / 2);
         scoreTxt.setPosition(xPos, yPos);
         scoreTxt.setFillColor(sf::Color(255, 255, 255));
         window.draw(scoreTxt);

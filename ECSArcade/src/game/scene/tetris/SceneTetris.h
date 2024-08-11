@@ -1,6 +1,8 @@
 #pragma once
 
 #include <array>
+#include <format>
+#include <ranges>
 
 #include "game/common/Vec2.h"
 #include "game/engine/Game.h"
@@ -68,12 +70,12 @@ struct TetrisStatus
 class SceneTetris : public Scene
 {
 public:
-    SceneTetris(Game* game);
+    explicit SceneTetris(Game* game);
 
-    void init();
-    void input();
-    void update(float deltaTime);
-    void render(sf::RenderWindow& window);
+    void init() override;
+    void input() override;
+    void update(float deltaTime) override;
+    void render(sf::RenderWindow& window) override;
 
 private:
     const sf::Color windowClearColor = sf::Color(0, 0, 0);
@@ -152,7 +154,7 @@ private:
     void processActions();
     void setBlockColor(const GridBlock& block) const;
 
-    void renderGridLines(sf::RenderWindow& window);
+    void renderGridLines(sf::RenderWindow& window) const;
     void renderGrid(sf::RenderWindow& window);
     void renderNextTetromino(sf::RenderWindow& window);
     void renderScore(sf::RenderWindow& window);
