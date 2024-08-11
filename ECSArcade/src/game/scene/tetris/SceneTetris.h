@@ -119,8 +119,6 @@ private:
     };
 
     void createActionList();
-    void renderBlocks(sf::RenderWindow& window);
-    void renderGrid(sf::RenderWindow& window);
     void createNextTetromino();
     void activateNextTetromino();
     bool isCollisionBottom(Tetromino& activeTetromino);
@@ -134,4 +132,12 @@ private:
     bool isRowFilled(int y);
     void clearRow(int y);
     void processActions();
+    void setBlockColor(sf::VertexArray& vArray, int width, int x, int y, int xOffset, int yOffset, int r, int g, int b);
+    void setBlockColor(sf::VertexArray& vArray, int width, int x, int y, int r, int g, int b);
+
+    void renderBlocks(sf::RenderWindow& window);
+    void renderGridLines(sf::RenderWindow& window);
+    void renderGrid(sf::RenderWindow& window);
+    void renderNextTetromino(sf::RenderWindow& window);
+    void renderScore(sf::RenderWindow& window);
 };

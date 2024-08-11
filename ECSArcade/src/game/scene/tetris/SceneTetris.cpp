@@ -473,139 +473,42 @@ void SceneTetris::render(sf::RenderWindow& window)
 {
     window.clear(windowClearColor);
 
-    renderBlocks(window);
     renderGrid(window);
+    renderNextTetromino(window);
+    renderScore(window);
 
     window.display();
 }
 
-void SceneTetris::renderBlocks(sf::RenderWindow& window)
+void SceneTetris::setBlockColor(sf::VertexArray& vArray, int width, int x, int y, int r, int g, int b)
 {
-    int vertexArraySize = columns * rows * 6;
-    sf::VertexArray vArray(sf::PrimitiveType::Triangles, vertexArraySize);
-    for (int y = 0; y < rows; y++)
-    {
-        for (int x = 0; x < columns; x++)
-        {
-            // get a pointer to the triangles' vertices of the current tile
-            sf::Vertex* triangles = &vArray[(x + y * columns) * 6];
-
-            // define the 6 corners of the two triangles
-            triangles[0].position = sf::Vector2f(x * cellSize, y * cellSize);
-            triangles[1].position = sf::Vector2f((x + 1) * cellSize, y * cellSize);
-            triangles[2].position = sf::Vector2f(x * cellSize, (y + 1) * cellSize);
-            triangles[3].position = sf::Vector2f(x * cellSize, (y + 1) * cellSize);
-            triangles[4].position = sf::Vector2f((x + 1) * cellSize, y * cellSize);
-            triangles[5].position = sf::Vector2f((x + 1) * cellSize, (y + 1) * cellSize);
-
-            sf::Color color = sf::Color::Black;
-
-            triangles[0].color = color;
-            triangles[1].color = color;
-            triangles[2].color = color;
-            triangles[3].color = color;
-            triangles[4].color = color;
-            triangles[5].color = color;
-        }
-    }
-
-    auto eBlocks = getGame()->getEntitiesWithTag(TETRIS_BLOCK);
-    for (auto& entity : eBlocks)
-    {
-        auto block = getGame()->getECSManager().getComponent<Block>(entity);
-
-        int x = block->position.x;
-        int y = block->position.y;
-
-        // get a pointer to the triangles' vertices of the current tile
-        sf::Vertex* triangles = &vArray[(x + y * columns) * 6];
-
-        // define the 6 corners of the two triangles
-        triangles[0].position = sf::Vector2f(x * cellSize, y * cellSize);
-        triangles[1].position = sf::Vector2f((x + 1) * cellSize, y * cellSize);
-        triangles[2].position = sf::Vector2f(x * cellSize, (y + 1) * cellSize);
-        triangles[3].position = sf::Vector2f(x * cellSize, (y + 1) * cellSize);
-        triangles[4].position = sf::Vector2f((x + 1) * cellSize, y * cellSize);
-        triangles[5].position = sf::Vector2f((x + 1) * cellSize, (y + 1) * cellSize);
-
-        sf::Color color = block->color;
-
-        triangles[0].color = color;
-        triangles[1].color = color;
-        triangles[2].color = color;
-        triangles[3].color = color;
-        triangles[4].color = color;
-        triangles[5].color = color;
-    }
-
-    window.draw(vArray);
-
-    auto eTetrominos = getGame()->getEntitiesWithTag(TETROMINO);
-    for (auto& entity : eTetrominos)
-    {
-        auto tetromino = getGame()->getECSManager().getComponent<Tetromino>(entity);
-
-        if (!tetromino->active) continue;
-
-        auto xOffset = tetromino->topLeftPos.x;
-        auto yOffset = tetromino->topLeftPos.y;
-
-        auto shape = tetromino->shape.value;
-        for (int x = 0; x < shapeSize; x++)
-        {
-            for (int y = 0; y < shapeSize; y++)
-            {
-                sf::Color color = tetromino->color;
-                if (shape[y][x] == 0) continue;
-
-                sf::RectangleShape block(sf::Vector2f(cellSize, cellSize));
-                block.setFillColor(color);
-                block.setPosition((x + xOffset) * cellSize, (y + yOffset) * cellSize);
-                window.draw(block);
-            }
-        }
-    }
-
-    for (auto& entity : eTetrominos)
-    {
-        auto tetromino = getGame()->getECSManager().getComponent<Tetromino>(entity);
-
-        if (!tetromino->next) continue;
-
-        auto xOffset = columns + 2;
-        auto yOffset = 4;
-
-        auto shape = tetromino->shape.value;
-        for (int x = 0; x < shapeSize; x++)
-        {
-            for (int y = 0; y < shapeSize; y++)
-            {
-                if (shape[y][x] == 0) continue;
-
-                sf::RectangleShape block(sf::Vector2f(cellSize, cellSize));
-                block.setFillColor(tetromino->color);
-                block.setPosition((x + xOffset) * cellSize, (y + yOffset) * cellSize);
-                window.draw(block);
-            }
-        }
-    }
-
-    auto eStatus = getGame()->getEntitiesWithTag(TETRIS_STATUS);
-    for (auto& entity : eStatus)
-    {
-        auto status = getGame()->getECSManager().getComponent<TetrisStatus>(entity);
-        auto& openSans = getGame()->getAssetManager().getFont("OpenSans");
-        sf::Text scoreTxt("Score: " + std::to_string(status->rowsCleared), openSans, 34);
-
-        auto xPos = (columns + 1) * cellSize;
-        auto yPos = (rows * cellSize) / 2;
-        scoreTxt.setPosition(xPos, yPos);
-        scoreTxt.setFillColor(sf::Color(255, 255, 255));
-        window.draw(scoreTxt);
-    }
+    setBlockColor(vArray, width, x, y, 0, 0, r, g, b);
 }
 
-void SceneTetris::renderGrid(sf::RenderWindow& window)
+void SceneTetris::setBlockColor(sf::VertexArray& vArray, int width, int x, int y, int xOffset, int yOffset, int r, int g, int b)
+{
+    // get a pointer to the triangles' vertices of the current tile
+    sf::Vertex* triangles = &vArray[(x + y * width) * 6];
+
+    // define the 6 corners of the two triangles
+    triangles[0].position = sf::Vector2f(x * cellSize + xOffset, y * cellSize + yOffset);
+    triangles[1].position = sf::Vector2f((x + 1) * cellSize + xOffset, y * cellSize + yOffset);
+    triangles[2].position = sf::Vector2f(x * cellSize + xOffset, (y + 1) * cellSize + yOffset);
+    triangles[3].position = sf::Vector2f(x * cellSize + xOffset, (y + 1) * cellSize + yOffset);
+    triangles[4].position = sf::Vector2f((x + 1) * cellSize + xOffset, y * cellSize + yOffset);
+    triangles[5].position = sf::Vector2f((x + 1) * cellSize + xOffset, (y + 1) * cellSize + yOffset);
+
+    sf::Color color(r,g,b);
+
+    triangles[0].color = color;
+    triangles[1].color = color;
+    triangles[2].color = color;
+    triangles[3].color = color;
+    triangles[4].color = color;
+    triangles[5].color = color;
+}
+
+void SceneTetris::renderGridLines(sf::RenderWindow& window)
 {
     auto width = getGame()->getWidth();
     auto height = getGame()->getHeight();
@@ -630,5 +533,111 @@ void SceneTetris::renderGrid(sf::RenderWindow& window)
         };
 
         window.draw(line, 2, sf::Lines);
+    }
+}
+
+void SceneTetris::renderGrid(sf::RenderWindow& window)
+{
+    int vertexArraySize = columns * rows * 6;
+    sf::VertexArray vArray(sf::PrimitiveType::Triangles, vertexArraySize);
+    for (int y = 0; y < rows; y++)
+    {
+        for (int x = 0; x < columns; x++)
+        {
+            setBlockColor(vArray, columns, x, y, 0, 0, 0);
+        }
+    }
+
+    auto eBlocks = getGame()->getEntitiesWithTag(TETRIS_BLOCK);
+    for (const auto& entity : eBlocks)
+    {
+        auto block = getGame()->getECSManager().getComponent<Block>(entity);
+        const auto position = block->position;
+        const auto x = (int)position.x;
+        const auto y = (int)position.y;
+        const sf::Color& color = block->color;
+        setBlockColor(vArray, columns, x, y, color.r, color.g, color.b);
+    }
+
+    auto eTetrominos = getGame()->getEntitiesWithTag(TETROMINO);
+    for (const auto& entity : eTetrominos)
+    {
+        auto tetromino = getGame()->getECSManager().getComponent<Tetromino>(entity);
+
+        if (!tetromino->active) continue;
+
+        const auto shape = tetromino->shape.value;
+        const sf::Color color = tetromino->color;
+        const auto position = tetromino->topLeftPos;
+        const auto xOffset = (int)position.x;
+        const auto yOffset = (int)position.y;
+
+        for (int x = 0; x < shapeSize; x++)
+        {
+            for (int y = 0; y < shapeSize; y++)
+            {
+                if (shape[y][x] == 0) continue;
+                const int xPos = x + xOffset;
+                const int yPos = y + yOffset;
+                setBlockColor(vArray, columns, xPos, yPos, color.r, color.g, color.b);
+            }
+        }
+    }
+    window.draw(vArray);
+    renderGridLines(window);
+}
+
+void SceneTetris::renderNextTetromino(sf::RenderWindow& window)
+{
+    const int xOffset = (columns + 2) * cellSize;
+    const int yOffset = 4 * cellSize;
+
+    int vertexArraySize = shapeSize * shapeSize * 6;
+    sf::VertexArray vArray(sf::PrimitiveType::Triangles, vertexArraySize);
+    for (int y = 0; y < shapeSize; y++)
+    {
+        for (int x = 0; x < shapeSize; x++)
+        {
+            setBlockColor(vArray, shapeSize, x, y, xOffset, yOffset, 0, 0, 0);
+        }
+    }
+
+    auto eTetrominos = getGame()->getEntitiesWithTag(TETROMINO);
+    for (const auto& entity : eTetrominos)
+    {
+        auto tetromino = getGame()->getECSManager().getComponent<Tetromino>(entity);
+
+        if (!tetromino->next) continue;
+
+        auto shape = tetromino->shape.value;
+        for (int x = 0; x < shapeSize; x++)
+        {
+            for (int y = 0; y < shapeSize; y++)
+            {
+                if (shape[y][x] == 0) continue;
+
+                sf::Color color = tetromino->color;
+                setBlockColor(vArray, shapeSize, x, y, xOffset, yOffset, color.r, color.g, color.b);
+            }
+        }
+    }
+
+    window.draw(vArray);
+}
+
+void SceneTetris::renderScore(sf::RenderWindow& window)
+{
+    auto eStatus = getGame()->getEntitiesWithTag(TETRIS_STATUS);
+    for (const auto& entity : eStatus)
+    {
+        auto status = getGame()->getECSManager().getComponent<TetrisStatus>(entity);
+        auto& openSans = getGame()->getAssetManager().getFont("OpenSans");
+        sf::Text scoreTxt("Score: " + std::to_string(status->rowsCleared), openSans, 34);
+
+        auto xPos = (columns + 1) * cellSize;
+        auto yPos = (rows * cellSize) / 2;
+        scoreTxt.setPosition(xPos, yPos);
+        scoreTxt.setFillColor(sf::Color(255, 255, 255));
+        window.draw(scoreTxt);
     }
 }
